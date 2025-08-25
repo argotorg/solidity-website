@@ -39,7 +39,7 @@ During the event you can expect to:
 
 We aim to have useful discussions that result in language improvement proposals and ultimately in actual implementations. Furthermore, we want to foster communication between teams working on similar topics, and identify needs for the smart contract ecosystem of Ethereum.
 
-Solidity Summit 2025 is part of [Devconnect Istanbul](https://devconnect.org/) and will be a one-day forum for the Solidity ecosystem. It is for all people involved and interested in the Solidity language and the apps and tooling around it.
+Solidity Summit 2025 is part of [Devconnect ARG](https://devconnect.org/) and will be a one-day forum for the Solidity ecosystem. It is for all people involved and interested in the Solidity language and the apps and tooling around it.
 
 ## Who can join?
 
