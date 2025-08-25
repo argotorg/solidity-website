@@ -7,9 +7,9 @@ endDate: 2025-11-18
 imageSrc: /assets/solidity_summit.png
 ctaLinks:
   - label: Attend
-    href: Attendee form coming soon!
+    href: https://drive.argot.org/form/#/2/form/view/6Call76R1Nf3vsaQ2Mhv4VIHuHaT5z274Wz8N3ocQtw/
   - label: Speak
-    href: Speaker form coming soon!
+    href: https://drive.argot.org/form/#/2/form/view/TmZlvgY9qObv9P2OIcv91drpWxWm-7OPuyFT4Tgone0/
 previewLinks:
   - label: Event Info
     href: /summit/
@@ -21,7 +21,7 @@ We're excited to bring back Solidity Summit for another edition, again as part o
 
 Speaker and attendee applications for 2025 are open!
 
-To apply for a speaking opportunity, please complete the [speaker form]().
+To apply for a speaking opportunity, please complete the [speaker form](https://drive.argot.org/form/#/2/form/view/TmZlvgY9qObv9P2OIcv91drpWxWm-7OPuyFT4Tgone0/).
 
 Keep in mind that the Solidity Summit is geared towards an experienced audience, which means you can get deep into the (Solidity) technicalities quickly!
 
@@ -79,9 +79,9 @@ This year, presentations and discussions will evolve around the following topics
 
 ## Registrations are open!
 
-Tickets for the Solidity Summit 2025 are free and given out on an application basis. Applications are [open]().
+Tickets for the Solidity Summit 2025 are free and given out on an application basis. Applications are [open](https://drive.argot.org/form/#/2/form/view/6Call76R1Nf3vsaQ2Mhv4VIHuHaT5z274Wz8N3ocQtw/).
 
-The Solidity Summit is focusing on an advanced audience and is not suitable for beginners who are just getting started with (Solidity) programming.
+The Solidity Summit focuses on an advanced audience and is not suitable for beginners who are just getting started with (Solidity) programming.
 
 ### Can't attend?
 
