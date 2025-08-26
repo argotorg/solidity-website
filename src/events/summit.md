@@ -19,9 +19,9 @@ previewLinks:
 
 We're excited to bring back Solidity Summit for another edition, again as part of the [Devconnect](https://devconnect.org/) week! 
 
-Speaker and attendee applications for 2025 are open!
+## Speaker and attendee applications for 2025 are now open!
 
-To apply for a speaking opportunity, please complete the [speaker form](https://drive.argot.org/form/#/2/form/view/TmZlvgY9qObv9P2OIcv91drpWxWm-7OPuyFT4Tgone0/).
+To apply for a speaking opportunity, please complete the [speaker form](https://drive.argot.org/form/#/2/form/view/TmZlvgY9qObv9P2OIcv91drpWxWm-7OPuyFT4Tgone0/). If you are interested in attending, [please complete the attendee application form](https://drive.argot.org/form/#/2/form/view/6Call76R1Nf3vsaQ2Mhv4VIHuHaT5z274Wz8N3ocQtw/).
 
 Keep in mind that the Solidity Summit is geared towards an experienced audience, which means you can get deep into the (Solidity) technicalities quickly!
 
@@ -39,7 +39,7 @@ During the event you can expect to:
 
 We aim to have useful discussions that result in language improvement proposals and ultimately in actual implementations. Furthermore, we want to foster communication between teams working on similar topics, and identify needs for the smart contract ecosystem of Ethereum.
 
-Solidity Summit 2025 is part of [Devconnect ARG](https://devconnect.org/) and will be a one-day forum for the Solidity ecosystem. It is for all people involved and interested in the Solidity language and the apps and tooling around it.
+Solidity Summit 2025 is part of [Devconnect ARG](https://devconnect.org/) and will be a one-day forum for the Solidity ecosystem. It is for anyone involved and interested in the Solidity language and the dapps and tooling around it.
 
 ## Who can join?
 
@@ -51,7 +51,7 @@ Experts in Solidity, or other EVM smart contract languages, can share updates, o
 
 #### Dapp Developers
 
-Apart from compiler builders/users, we would love to provide a platform for dapp developers to showcase the Solidity language best practices, challenges, and DOs and DON'Ts of building decentralised applications that are powered by Solidity.
+Apart from compiler builders/users, we intend to provide a platform for dapp developers to showcase the Solidity language best practices, challenges, and DOs and DON'Ts of building decentralised applications that are powered by Solidity.
 
 #### Tooling Builders, Security Researchers & Auditors
 
@@ -59,13 +59,13 @@ IDE developers, debuggers, analysis tools, or testing frameworks can use this oc
 
 #### Solidity Enthusiasts
 
-Seasoned Solidity users can share their finest Solidity hacks, tips, and comments!
+Seasoned Solidity users can share their finest Solidity hacks, takes, and tips!
 
 ## What will we talk about?
 
 This year, presentations and discussions will evolve around the following topics:
 
-- Application development in Ethereum powered by Solidity
+- Application development on Ethereum powered by Solidity
 - Solidity and Yul
 - Language changes or extension proposals
 - Long-term future of Solidity (Argot: Solidity's new home, Experimental Solidity, etc.)
