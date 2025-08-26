@@ -68,7 +68,7 @@ This year, presentations and discussions will evolve around the following topics
 - Application development on Ethereum powered by Solidity
 - Solidity and Yul
 - Language changes or extension proposals
-- Long-term future of Solidity (Argot: Solidity's new home, Experimental Solidity, etc.)
+- Long-term future of Solidity (Argot: Solidity's new home, Core Solidity, etc.)
 - Feedback on recently introduced features
 - Unification / extension of the ABI
 - Tooling, debuggers and debugging data output
