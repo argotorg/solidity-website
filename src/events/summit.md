@@ -23,7 +23,7 @@ We're excited to bring back Solidity Summit for another edition, again as part o
 
 To apply for a speaking opportunity, please complete the [speaker form](https://drive.argot.org/form/#/2/form/view/TmZlvgY9qObv9P2OIcv91drpWxWm-7OPuyFT4Tgone0/). If you are interested in attending, [please complete the attendee application form](https://drive.argot.org/form/#/2/form/view/6Call76R1Nf3vsaQ2Mhv4VIHuHaT5z274Wz8N3ocQtw/).
 
-Keep in mind that the Solidity Summit is geared towards an experienced audience, which means you can get deep into the (Solidity) technicalities quickly!
+Keep in mind that the Solidity Summit is geared towards an experienced audience, which means we could descent deep into the (Solidity) technicalities quickly!
 
 You can follow Solidity on [Twitter](https://twitter.com/solidity_lang) or monitor the [Solidity blog](/blog) to not miss any update about the event.
 
