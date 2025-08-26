@@ -13,7 +13,7 @@ Solidity Summit 2025 will be a part of [DevConnect](https://devconnect.org/) thi
 
 ## What can you expect at Solidity Summit 2025?
 
-The Solidity Summit is a collaborative conference that focuses on Solidity's future. It is a gathering of advanced Solidity users and other Solidity ecosystem stakeholders such as language designers, dapp developers, tooling builders, auditors, and security researchers.
+The Solidity Summit is a collaborative conference that focuses on Solidity's future. It is a gathering of advanced Solidity users and other Solidity ecosystem stakeholders such as language designers, dapp developers, tooling builders, auditors and security researchers.
 
 During the event you will:
 - Find out more about the most recent language proposals and new features.
