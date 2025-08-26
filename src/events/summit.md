@@ -55,7 +55,7 @@ Apart from compiler builders/users, we intend to provide a platform for dapp dev
 
 #### Tooling Builders, Security Researchers & Auditors
 
-IDE developers, debuggers, analysis tools, or testing frameworks can use this occasion to share updates with the audience.
+IDE developers, debuggers, analysis tools or testing frameworks can use this occasion to share updates with the audience.
 
 #### Solidity Enthusiasts
 
