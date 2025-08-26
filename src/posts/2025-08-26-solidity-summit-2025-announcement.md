@@ -24,14 +24,14 @@ During the event you will:
 
 The call for proposals is now open. To apply for a speaking opportunity, [please complete the speaker application form](https://drive.argot.org/form/#/2/form/view/TmZlvgY9qObv9P2OIcv91drpWxWm-7OPuyFT4Tgone0/).
 
-Keep in mind that the Solidity Summit is geared towards an experienced audience, which means you can get "deep" into the Solidity weeds or technical things.
+Keep in mind that the Solidity Summit is geared towards an experienced audience, which means we can descent deep into the Solidity weeds or technical things.
 
 ## Who is a good fit to speak at the Solidity Summit 2025?
 
 - **(Solidity) Language Shapers**: Experts in Solidity or other EVM smart contract languages can share updates or present improvement ideas and their thoughts.
 - **Tooling & app devs**: Developers who build dapps powered by Solidity contracts, IDEs, debuggers, analysis tools or testing frameworks can use this occasion to share best practices, challenges and feedback with the audience.
 - **Auditors and Security Researchers**: Security tips, common mistakes and vulnerabilities, insights from audits or suggestions to share are welcome!
-- **Solidity Power Users**: Solidity users can share their finest Solidity hacks, tips and comments!
+- **Solidity Power Users**: Solidity users can share their finest Solidity hacks, takes and tips!
 
 Don't see your name on the list, yet believe you have something important to say? In any case, don't hesitate to apply for a talk!
 
