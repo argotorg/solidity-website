@@ -7,7 +7,7 @@ author: Vishwa Mehta
 category: Announcements
 ---
 
-The [Solidity Summit](https://soliditylang.org/summit/) has returned! Following the successful organisation of [Solidity Summit 2023 in Türkiye](https://soliditylang.org/blog/2023/11/30/solidity-summit-2023-recap/), we are pleased to announce another in-person edition of the event in 2025!
+The [Solidity Summit](https://soliditylang.org/summit/) has returned! Following the successful organisation of [Solidity Summit 2023 in Türkiye](https://soliditylang.org/blog/2023/11/30/solidity-summit-2023-recap/), we are pleased to announce another in-person edition of the event in 2025.
 
 Solidity Summit 2025 will be a part of [DevConnect](https://devconnect.org/) this year and will take place on **Tue, 18 Nov, 2025 in Buenos Aires, Argentina**.
 
@@ -20,9 +20,9 @@ During the event you will:
 - Hear what's new from Solidity tooling and security researchers.
 - Learn from Solidity experts.
 
-## Speaker applications are open now!
+## Speaker and attendee applications are now open!
 
-The call for proposals is open now. To apply for a speaking opportunity, [please complete the speaker application form](https://drive.argot.org/form/#/2/form/view/TmZlvgY9qObv9P2OIcv91drpWxWm-7OPuyFT4Tgone0/).
+The call for proposals is now open. To apply for a speaking opportunity, [please complete the speaker application form](https://drive.argot.org/form/#/2/form/view/TmZlvgY9qObv9P2OIcv91drpWxWm-7OPuyFT4Tgone0/).
 
 Keep in mind that the Solidity Summit is geared towards an experienced audience, which means you can get "deep" into the Solidity weeds or technical things.
 
