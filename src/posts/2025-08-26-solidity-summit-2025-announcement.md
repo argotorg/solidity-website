@@ -30,7 +30,7 @@ Keep in mind that the Solidity Summit is geared towards an experienced audience,
 
 - **(Solidity) Language Shapers**: Experts in Solidity or other EVM smart contract languages can share updates or present improvement ideas and their thoughts.
 - **Tooling & app devs**: Developers who build dapps powered by Solidity contracts, IDEs, debuggers, analysis tools or testing frameworks can use this occasion to share best practices, challenges and feedback with the audience.
-- **Auditors and Security Researchers**: Security tips, common mistakes and vulnerabilities, insights from audits, or suggestions to share are welcome!
+- **Auditors and Security Researchers**: Security tips, common mistakes and vulnerabilities, insights from audits or suggestions to share are welcome!
 - **Solidity Power Users**: Solidity users can share their finest Solidity hacks, tips, and comments!
 
 Don't see your name on the list, yet believe you have something important to say? In any case, don't hesitate to apply for a talk!
