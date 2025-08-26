@@ -59,7 +59,7 @@ IDE developers, debuggers, analysis tools or testing frameworks can use this occ
 
 #### Solidity Enthusiasts
 
-Seasoned Solidity users can share their finest Solidity hacks, takes, and tips!
+Seasoned Solidity users can share their finest Solidity hacks, takes and tips!
 
 ## What will we talk about?
 
