@@ -1,6 +1,6 @@
 ---
 title: Solidity Summit 2025
-location: La Rural, Buenos Aires, Argentina
+location: La Rural, Av. Sarmiento 2704, C1425 Cdad. Autónoma de Buenos Aires, Argentina
 mapLabel: Location
 startDate: 2025-11-18
 endDate: 2025-11-18
