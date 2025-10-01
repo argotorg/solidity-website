@@ -10,7 +10,7 @@ endDate: 2025-11-18
 imageSrc: /assets/solidity_summit.png
 ctaLinks:
   - label: Attend
-    href: https://drive.argot.org/form/#/2/form/view/6Call76R1Nf3vsaQ2Mhv4VIHuHaT5z274Wz8N3ocQtw/
+    href: https://devconnect.org/calendar?event=soliditysummit
   - label: Speak
     href: https://drive.argot.org/form/#/2/form/view/TmZlvgY9qObv9P2OIcv91drpWxWm-7OPuyFT4Tgone0/
 previewLinks:
