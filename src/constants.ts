@@ -261,7 +261,7 @@ export const USE_CASES: UseCase[] = [
     description:
       'Solidity has enabled the creation of DAOs, which are self-governing organizations that operate on smart contracts, allowing for transparent decision-making and governance.',
     imageSrc: '/assets/use-case-glyph-3.svg',
-    learnMoreLink: `${ETHEREUM_ORG_URL}/dao`,
+    learnMoreLink: `${ETHEREUM_ORG_URL}/en/dao`,
     triangleVariant: 'heap',
     mobileTriangleVariant: 'mobileHeap',
   },
