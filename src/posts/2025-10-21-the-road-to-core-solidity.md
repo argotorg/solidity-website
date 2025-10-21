@@ -3,7 +3,7 @@ layout: post
 published: true
 title: 'The Road to Core Solidity'
 date: '2025-10-21'
-author: Vishwa Mehta
+author: Solidity Team
 category: Announcements
 ---
 
