@@ -135,7 +135,7 @@ to the corresponding instructions in the bytecode.
 While this information was already available in the form of
 [source maps](https://docs.soliditylang.org/en/v0.8.30/internals/source_mappings.html),
 it is just a part of the specification and the output will be extended in future releases to cover
-all of the [ethedebug schemas](https://ethdebug.github.io/format/spec/overview).
+all of the [ethdebug schemas](https://ethdebug.github.io/format/spec/overview).
 
 Internally, a major missing part is the support for the optimizer,
 which is the main point of the whole effort.
