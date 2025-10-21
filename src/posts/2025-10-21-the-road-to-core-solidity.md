@@ -22,7 +22,7 @@ This first blog post gives a brief introduction to each part in the long-term ro
 All of these topics will be covered in-depth in the series:
 - Long-term trajectory of the language towards version 1.0.
 - The ongoing work on the backend to fix long-standing issues with the IR pipeline, improve debugger support and keep up with EVM changes.
-- The state of the language now and how far we can take it in accommodating user's wishes before we move on to Core Solidity.
+- The state of the language now and how far we can take it in accommodating users' wishes before we move on to Core Solidity.
 - Planned breaking changes and interoperability features in the transition.
 - What is (and isn't) Core Solidity.
 
