@@ -263,7 +263,7 @@ Core Solidity is a mostly backwards-compatible upgrade to the Solidity type syst
 It takes ideas from pure functional languages like [Lean](https://lean-lang.org) and [Haskell](https://www.haskell.org), as well as modern systems languages like [Rust](https://rust-lang.org) and [Zig](https://ziglang.org), and adapts them to the EVM context based on our learnings from Classic Solidity.
 
 The transition will represent a step change in power and expressivity for Solidity.
-Most high-level language features known from Classic Solidity will be definable as standard library constructs and desugaring passes into a minimalistic inner language called SAIL (Solidity Abstract Intermediate Language).
+Most high-level language features known from Classic Solidity will be definable as standard library constructs and desugaring passes into a minimalistic inner language called SAIL.
 SAIL itself is deliberately meant to be as lean as we can possibly make it while still supporting the core features:
 - Generics / parametric polymorphism
 - Traits (a.k.a. typeclasses)
