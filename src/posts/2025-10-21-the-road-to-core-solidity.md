@@ -196,7 +196,7 @@ With the scope of Core Solidity becoming clearer and it morphing into a separate
 we have decided to change this approach and take Classic Solidity a bit further,
 as long as it does not conflict with the long-term direction of the new frontend.
 
-We will soon publish what we termed "The future of Classic Solidity: A roadmap wishlist" - a list of language features that we are open to still implementing in the current language, categorized by the required implementation and design effort as well as the value it will provide in the long term, when Core Solidity takes over.
+"The future of Classic Solidity: A roadmap wishlist" - one of the upcoming posts in this series - will present a list of language features that we are open to still implementing in the current language, categorized by the required implementation and design effort as well as the value it will provide in the long term, when Core Solidity takes over.
 It will be accompanied by a detailed description of each feature, known difficulties and  options for the design.
 
 We expect that we will not be able to deliver all of those features before we move on to Core Solidity.
