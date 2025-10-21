@@ -316,4 +316,4 @@ Once the language becomes stable, we are going to establish an open process for 
 
 We plan to publish new blog posts as part of this series at a regular cadence and would like to invite the community to be an active participant in helping us shape the future of Solidity.
 
-Keep your eyes peeled for the forum post to provide feedback on the language roadmap.
+We have started a [forum thread to facilitate feedback and open discussions](https://forum.soliditylang.org/t/call-for-feedback-solidity-long-term-roadmap/3530) on the upcoming parts of the series. We request readers to take the time to go through the overview shared in this blog post and get involved in the process going forward by sharing their thoughts below the forum thread.
