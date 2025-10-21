@@ -29,7 +29,7 @@ All of these topics will be covered in-depth in the series:
 ...and more!
 
 ## Team notes
-This year has seen changes in the team, which some of which had a big imapct on our plans:
+This year has seen changes in the team, some of which had a big impact on our plans:
 
 - As Solidity joined Argot as a new home for core Ethereum infrastructure, much of 2025 was dedicated to preparing for Argot's successful launch.
 - Daniel Kirchner, former team lead, is currently on sabbatical.
