@@ -5,7 +5,14 @@ import { ParsedUrlQuery } from 'querystring'
 import ReactMarkdown from 'react-markdown'
 import ChakraUIRenderer from 'chakra-ui-markdown-renderer'
 import type { GetStaticPaths, GetStaticProps } from 'next/types'
-import { Box, Flex, FlexProps, Image, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  FlexProps,
+  Image,
+  Text,
+  useColorMode,
+} from '@chakra-ui/react'
 import { ButtonLink, Map, PageMetadata, YouTube } from '@/components'
 import { EVENTS_DIR, MAIN_CONTENT_ID, MATTER_OPTIONS } from '@/constants'
 import { EventMDStyles } from '@/styles'
@@ -76,6 +83,7 @@ const CtaButtonGroup: React.FC<CtaButtonGroupProps> = ({
 )
 
 const EventPage: React.FC<EventPost> = ({ frontmatter, content }) => {
+  const { colorMode } = useColorMode()
   const {
     title,
     location,
@@ -93,16 +101,19 @@ const EventPage: React.FC<EventPost> = ({ frontmatter, content }) => {
   )}`
   const isMultiDay = formatDate(startDate) !== formatDate(endDate)
 
+  // Use different star images based on color mode
+  const starImageSrc =
+    colorMode === 'dark' ? '/assets/star_gray.png' : '/assets/star_blue.png'
+
   return (
     <>
       <PageMetadata title={title} description={description} />
       <Box as="main" id={MAIN_CONTENT_ID}>
         {/* Hero image */}
         <Image
-          src={imageSrc}
+          src={starImageSrc}
           alt="Event hero image"
-          maxH="450px"
-          w="full"
+          maxW="250px"
           objectFit="cover"
           mx="auto"
         />
