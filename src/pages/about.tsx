@@ -80,8 +80,7 @@ export default function About() {
           </Text>
           <Text>
             The Solidity programming language is an <b>open-source</b>,
-            community project governed by a core team. The project started within the Ethereum Foundation and now,
-            is part of the <Link href="https://argot.org/">Argot Collective</Link>.
+            community project governed by a core team. Originally started within the Ethereum Foundation, the project is now part of the <Link href="https://argot.org/">Argot Collective</Link>.
           </Text>
         </Section>
       </Box>
