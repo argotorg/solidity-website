@@ -7,7 +7,7 @@ coordsOverride:
 mapLabel: Location
 startDate: 2025-11-18
 endDate: 2025-11-18
-imageSrc: /assets/solidity_summit.png
+imageSrc: /assets/summit_star.png
 ctaLinks:
   - label: Attend
     href: https://devconnect.org/calendar?event=soliditysummit
