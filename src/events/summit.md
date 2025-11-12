@@ -80,7 +80,7 @@ This year, presentations and discussions will evolve around the following topics
 
 ## 2025 Event Schedule
 
-You can find the agenda for Solidity Summit 2023 below.
+You can find the agenda for Solidity Summit 2025 below.
 
 | Time  | Title                                                                        | Speaker (Affiliation)                          |
 | ----- | ---------------------------------------------------------------------------- | ---------------------------------------------- |
