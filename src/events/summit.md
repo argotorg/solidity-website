@@ -104,7 +104,7 @@ You can find the agenda for Solidity Summit 2025 below.
 | 16:05 | How Type-Driven Development Can Turbocharge your Contract's Security         | philogy (Spearbit)                             |
 | 16:35 | All the things I wish (native) Solidity would let me do                      | Hadrien Croubois (OpenZeppelin)                |
 | 17:05 | The Death of the __gap: Custom Storage Layouts                               | Eric Marti Haynes (Nethermind)                 |
-| 17:35 | Hardhat 3 is here: what’s new and why you should use it                      | John Kane (Nomic Foundation)                   |
+| 17:35 | Hardhat 3 is here: what's new and why you should use it                      | John Kane (Nomic Foundation)                   |
 | 18:05 | Solar Invictus                                                               | DaniPopes (Solar)                              |
 | 18:35 | Thank you note                                                               |  Vishwa Mehta (Solidity | Argot Collective)    |
 | 18:45 | +++ End of Conference +++                                                    |                                                |
