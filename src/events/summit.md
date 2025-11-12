@@ -89,10 +89,10 @@ You can find the agenda for Solidity Summit 2025 below.
 | 10:10 | From EF to Argot: Solidity’s New Home                                        | Lea Schmitt (Argot Collective)                 |
 | 10:20 | From Classic to Core Solidity                                                | Kamil Sliwak (Solidity | Argot Collective)     |
 | 10:35 | ethdebug format overview (2025)                                              | gnidan (ethdebug | Argot Collective)           |
-| 10:50 | SSA-CFG Yul: A new viaIR backend                                             | Moritz Hoffman (Solidity | Argot Collective)   |
-| 11:05 | How to solve stack-too-deep errors: a Yul to EVM pipeline                    | Alejandro Cerezo (Project GreY)                |
-| 11:35 | The State of Source-Code Verification: Closed, Painful, and Ready for Change | Samir Genaim (Project GreY)                    |
-| 11:50 | +++ Lunch Break +++                                                          |                                                |
+| 11:00 | SSA-CFG Yul: A new viaIR backend                                             | Moritz Hoffman (Solidity | Argot Collective)   |
+| 11:15 | How to solve stack-too-deep errors: a Yul to EVM pipeline                    | Alejandro Cerezo (Project GreY)                |
+| 11:45 | Formally Verifying YUL-Level Static Analyses and Optimization with Coq       | Samir Genaim (Project GreY)                    |
+| 12:00 | +++ Lunch Break +++                                                          |                                                |
 | 12:35 | The State of Source-Code Verification: Closed, Painful, and Ready for Change | Kaan Uzdogan (Sourcify | Argot Collective)     |
 | 13:05 | soldb - CLI tool for debugging Solidity and EVM rollups                      | Roman Mazur (Walnut)                           |
 | 13:35 | Verifying LLM-powered Code Transformations with Equivalence Checking         | John Toman (Certora)                           |
