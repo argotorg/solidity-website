@@ -91,7 +91,7 @@ You can find the agenda for Solidity Summit 2025 below.
 | 10:35 | ethdebug format overview (2025)                                              | gnidan (ethdebug | Argot Collective)           |
 | 10:50 | SSA-CFG Yul: A new viaIR backend                                             | Moritz Hoffman (Solidity | Argot Collective)   |
 | 11:20 | How to solve stack-too-deep errors: a Yul to EVM pipeline                    | Alejandro Cerezo (Project GreY | Complutense University of Madrid) |
-| 11:50 | Formally Verifying YUL-Level Static Analyses and Optimization with Coq       | Samir Genaim (University of Madrid)            |
+| 11:50 | Formally Verifying YUL-Level Static Analyses and Optimization with Coq       | Samir Genaim (Complutense University of Madrid)            |
 | 12:05 | +++ Lunch Break +++                                                          |                                                |
 | 12:40 | The State of Source-Code Verification: Closed, Painful, and Ready for Change | Kaan Uzdogan (Sourcify | Argot Collective)     |
 | 13:10 | soldb - CLI tool for debugging Solidity and EVM rollups                      | Roman Mazur (Walnut)                           |
