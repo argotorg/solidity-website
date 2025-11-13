@@ -11,8 +11,6 @@ imageSrc: /assets/summit_star.png
 ctaLinks:
   - label: Attend
     href: https://devconnect.org/calendar?event=soliditysummit
-  - label: Speak
-    href: https://drive.argot.org/form/#/2/form/view/TmZlvgY9qObv9P2OIcv91drpWxWm-7OPuyFT4Tgone0/
 previewLinks:
   - label: Event Info
     href: /summit/
@@ -20,7 +18,7 @@ previewLinks:
 
 ## The Solidity Summit is a collaborative event focusing on the future of [Solidity](/).
 
-We're excited to bring back Solidity Summit for another edition, again as part of the [Devconnect](https://devconnect.org/) week! 
+We're excited to bring back Solidity Summit for another edition, again as part of the [Devconnect](https://devconnect.org/) week!
 
 ## Speaker and attendee applications for 2025 are now open!
 
@@ -79,6 +77,37 @@ This year, presentations and discussions will evolve around the following topics
 - Source-code/formal verification
 - Layer 2 support, cross-chain support
 - Mechanisms / programming patterns (on the EVM) like mutexes, state machines, upgradeable contracts, libraries, create2, etc.
+
+## 2025 Event Schedule
+
+You can find the agenda for Solidity Summit 2025 below.
+
+| Time  | Title                                                                        | Speaker (Affiliation)                                                   |
+|-------|------------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| 9:00  | +++ Registrations Open +++                                                   |                                                                         |
+| 10:00 | Opening & Welcome Note                                                       | Vishwa Mehta (Solidity &#124; Argot Collective)                         |
+| 10:10 | From EF to Argot: Solidity’s New Home                                        | Lea Schmitt (Argot Collective)                                          |
+| 10:20 | From Classic to Core Solidity                                                | Kamil Sliwak (Solidity &#124; Argot Collective)                         |
+| 10:35 | ethdebug format overview (2025)                                              | gnidan (ethdebug &#124; Argot Collective)                               |
+| 10:50 | SSA-CFG Yul: A new viaIR backend                                             | Moritz Hoffman (Solidity &#124; Argot Collective)                       |
+| 11:20 | How to solve stack-too-deep errors: a Yul to EVM pipeline                    | Alejandro Cerezo (Project GreY &#124; Complutense University of Madrid) |
+| 11:50 | Formally Verifying YUL-Level Static Analyses and Optimization with Coq       | Samir Genaim (Complutense University of Madrid)                         |
+| 12:05 | +++ Lunch Break +++                                                          |                                                                         |
+| 12:40 | The State of Source-Code Verification: Closed, Painful, and Ready for Change | Kaan Uzdogan (Sourcify &#124; Argot Collective)                         |
+| 13:10 | soldb - CLI tool for debugging Solidity and EVM rollups                      | Roman Mazur (Walnut)                                                    |
+| 13:40 | Verifying LLM-powered Code Transformations with Equivalence Checking         | John Toman (Certora)                                                    |
+| 14:10 | solx: an LLVM-based Solidity toolchain                                       | Oleksandr Zarudnyi (solx &#124; Nomic Foundation)                       |
+| 14:40 | Introducing Core Solidity                                                    | Rodrigo Ribeiro (Solidity &#124; Argot Collective)                      |
+| 15:10 | So, you think you can write an EVM decompiler?                               | Yannis Smaragdakis (Dedaub)                                             |
+| 15:40 | +++ Coffee Break +++                                                         |                                                                         |
+| 16:00 | Preventing Hacks with Security Rules Written in Solidity                     | odysseas (Phylax Systems)                                               |
+| 16:15 | How Type-Driven Development Can Turbocharge your Contract's Security         | philogy (Spearbit)                                                      |
+| 16:45 | All the things I wish (native) Solidity would let me do                      | Hadrien Croubois (OpenZeppelin)                                         |
+| 17:15 | The Death of the __gap: Custom Storage Layouts                               | Eric Marti Haynes (Nethermind)                                          |
+| 17:45 | Hardhat 3 is here: what's new and why you should use it                      | John Kane (Nomic Foundation)                                            |
+| 18:15 | Solar Invictus                                                               | DaniPopes (Solar)                                                       |
+| 18:45 | Thank you note                                                               | Vishwa Mehta (Solidity &#124; Argot Collective)                         |
+| 18:55 | +++ End of Conference +++                                                    |                                                                         |
 
 ## Registrations are open!
 
