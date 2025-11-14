@@ -51,7 +51,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
           cache: ${{ steps.detect-package-manager.outputs.manager }}
       - name: Setup Pages
         uses: actions/configure-pages@v3
@@ -73,12 +73,11 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
-      - name: Build with Next.js
+      - name: Build and static HTML export with Next.js
+        # Files are exported after build to `docs` folder as specified in next.config.js `distDir` field
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
         env:
           GITHUB_TOKEN_READ_ONLY: ${{ secrets.TOKEN_READ_ONLY }}
-      - name: Static HTML export with Next.js
-        run: ${{ steps.detect-package-manager.outputs.runner }} next export -o docs
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
