@@ -35,6 +35,8 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
         textAlign="center"
         fontSize={{ base: 'sm', md: 'md' }}
         fontWeight="medium"
+        zIndex={9999}
+        position="relative"
       >
         Join us for the{' '}
         <Link
