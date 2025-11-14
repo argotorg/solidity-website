@@ -1,8 +1,8 @@
 import { Text, useColorMode } from '@chakra-ui/react'
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter'
 import {
-  prism,
-  vscDarkPlus,
+  oneLight,
+  dracula,
 } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import bash from 'react-syntax-highlighter/dist/cjs/languages/prism/bash'
 import javascript from 'react-syntax-highlighter/dist/cjs/languages/prism/javascript'
@@ -31,7 +31,7 @@ export const Code: React.FC<CodeProps> = ({ children, inline, properties }) => {
       {children[0]}
     </Text>
   ) : (
-    <SyntaxHighlighter style={isDark ? vscDarkPlus : prism} language={language}>
+    <SyntaxHighlighter style={isDark ? dracula : oneLight} language={language}>
       {children[0]}
     </SyntaxHighlighter>
   )

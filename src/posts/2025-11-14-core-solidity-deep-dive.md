@@ -368,7 +368,7 @@ let (a, b) = abi.decode(input, (uint256, uint256))
 Another common frustration with Classic Solidity is the syntactic noise required when defining array
 literals. Consider the following snippet:
 
-```Solidity
+```solidity
 uint256[3] memory a = [1, 2, 3];
 ```
 
