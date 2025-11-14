@@ -427,7 +427,7 @@ express the full range of high-level language constructs found in Classic Solidi
 - Type classes
 - Generics
 
-A SAIL variable is conceptually the same as a [Yul variable](https://docs.soliditylang.org/en/v0.8.30/yul.html#variable-declarations). The compiler will associate an EVM stack slot to it.
+A SAIL variable is conceptually similar to a [Yul variable](https://docs.soliditylang.org/en/v0.8.30/yul.html#variable-declarations). The compiler will associate EVM stack space to it.
 SAIL has a single builtin type (`word`) that has the same range of values as a Classic Solidity
 `bytes32` or `uint256`, and can semantically be viewed as the type of an EVM stack slot. Contracts in SAIL are very low level (essentially just a runtime entrypoint and initcode
 entrypoint).
