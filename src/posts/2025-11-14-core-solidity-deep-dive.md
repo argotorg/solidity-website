@@ -588,7 +588,7 @@ instance uint256:ABIEncode {
 }
 ```
 
-Finally we can define a top_level `abi_encode` function that handles the initial memory allocation
+Finally, we can define a top_level `abi_encode` function that handles the initial memory allocation
 and free memory pointer updates (we have omitted the implementation of the low level
 `get_free_memory` and `set_free_memory` helpers for the sake of brevity):
 
