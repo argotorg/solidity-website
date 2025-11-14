@@ -84,7 +84,7 @@ compile time.
 
 Let's start with a very simple type:
 
-```solidity
+```js
 data Bool = True | False
 ```
 
@@ -96,7 +96,7 @@ We can also use ADTs to implement the same kind of patterns as [User Defined
 Value Types](https://docs.soliditylang.org/en/latest/types.html#user-defined-value-types) in
 Classic Solidity. For example, an 18 decimal fixed point (a [wad](https://dappsys.readthedocs.io/en/latest/ds_math.html)) can be represented as
 
-```solidity
+```js
 data wad = wad(uint256)
 ```
 
@@ -111,7 +111,7 @@ we will use pattern matching. Pattern matching is a control flow mechanism that 
 and inspect data by shape. Instead of nested if-else chains, we can write declarative
 expressions that exhaustively consider all possible values of the matched type.
 
-```solidity
+```js
 let WAD = 10 ** 18;
 
 function wmul(lhs : wad, rhs : wad) -> wad {
@@ -123,7 +123,7 @@ function wmul(lhs : wad, rhs : wad) -> wad {
 
 Lets look at a more complete example. Consider the following type definition for an auction state:
 
-```solidity
+```js
 data AuctionState =
     NotStarted(uint256)
   | Active(uint256, address)
@@ -144,7 +144,7 @@ possible alternative state. The `_` case at the end of the match is a default th
 remaining states that have not yet been explicitly matched. Exhaustiveness is enforced by the
 compiler, ensuring that every possible state is handled exactly once.
 
-```solidity
+```js
 function processAuction(state: State) -> State {
     match state {
     | NotStarted(reserve) =>
@@ -168,7 +168,7 @@ Generics implement parametric polymorphism: they enable us to write functions an
 that behave in a uniform way for all types. As an example, we can define a polymorphic `identity`
 function:
 
-```solidity
+```js
 forall T . function identity(x : T) -> T {
     return x;
 }
@@ -179,7 +179,7 @@ Here, the `forall` introduces a new type variable `T` that is scoped to the func
 We can also define generic types, like the following `Result` type that is parameterised by the type of
 the payload in the error case:
 
-```solidity
+```js
 data Result(T) = Ok | Err(T)
 ```
 
@@ -191,7 +191,7 @@ define generic functions that are polymorphic over a restricted subset of types.
 A type class is simply an interface specification. Consider the following definition of a class of
 types that can be multiplied:
 
-```solidity
+```js
 forall T . class T:Mul {
     function mul(lhs : T, rhs : T) -> T;
 }
@@ -202,7 +202,7 @@ is more idiomatic to define an instance (known in Rust as `impl`) of the `Mul` t
 This gives us a uniform syntax for multiplication across all types, and allows us to use our `wad`
 type in functions that are generic over any instance of the `Mul` type class:
 
-```solidity
+```js
 instance wad:Mul {
     function mul(lhs : wad, rhs : wad) -> wad {
         return wmul(lhs, rhs);
@@ -213,7 +213,7 @@ instance wad:Mul {
 If we want to write a function that can accept any type that is an instance of `Mul` we need to add
 a constraint to the signature:
 
-```solidity
+```js
 forall T . T:Mul => function square(val : T) -> T {
     return Mul.mul(val, val);
 }
@@ -222,7 +222,7 @@ forall T . T:Mul => function square(val : T) -> T {
 Simple wrapper types like `wad` are very common, and one type class that can be particularly helpful
 when working with them is `Typedef`:
 
-```solidity
+```js
 forall T U . class T:Typedef(U) {
     function abs(x:U) -> T;
     function rep(x:T) -> U;
@@ -233,7 +233,7 @@ The `abs` (abstraction) and `rep` (representation) functions let us move between
 their underlying types in a generic way and without the syntactic noise of having to introduce
 pattern matching every time we want to unwrap a type. The instance for `wad` would look like this:
 
-```solidity
+```js
 instance wad:Typedef(uint256) {
     function abs(u: uint256) -> wad {
         return wad(u);
@@ -264,7 +264,7 @@ the single argument overloads from the original library. The `word` type used in
 is a low level type that represents a Yul variable, and is the only type that can be passed into or
 out of assembly blocks.
 
-```solidity
+```js
 forall T . T:ABIEncode => function log(val : T) {
     let CONSOLE_ADDRESS : word = 0x000000000000000000636F6e736F6c652e6c6f67;
     let payload = abi_encode(val);
@@ -303,20 +303,20 @@ as parameters, return values, and assignable entities.
 As an example, consider the following which implements a custom ABI decoding
 of a triple of booleans from a single `word` value:
 
-```solidity
+```js
 forall T . function unpack_bools(fn : (bool, bool, bool) -> T) -> ((word) -> T) {
     return lam (bools : word) -> {
         let wordToBool = lam (w : word) { return w > 0; };
-        
+
         // extract the right-most bit from `bools`
         let b0 = wordToBool(and(bools, 0x1));
-        
+
         // shift `bools` by one and extract the right-most bit
         let b1 = wordToBool(and(shr(1, bools), 0x1));
-        
+
         // shift `bools` by two and extract the right-most bit
         let b2 = wordToBool(and(shr(2, bools), 0x1));
-        
+
         return fn(b0, b1, b2);
     };
 }
@@ -328,7 +328,7 @@ We also support the definition of (non-recursive) anonymous functions using the 
 Functions defined in this way can capture values available in the defining scope. As an example
 consider this testing utility that counts the number of times an arbitrary function is called:
 
-```solidity
+```js
 forall T U . function count_calls(fn : (T) -> U) -> (memory(word), (T) -> U) {
     let counter : memory(word) = allocate(32);
     return (counter, lam (a : T) -> {
@@ -351,24 +351,23 @@ and the situations in which ambiguities requiring annotation can occur are very 
 us solve a lot of the syntactic clutter required when writing Classic Solidity. As an example,
 consider the following Classic Solidity definition:
 
-
 For example, assigning an expression to a variable in Classic Solidity can often result in redundant annotation if those
 types are already present in the expression being assigned:
 
-```solidity
+```js
 (bytes memory a, bytes memory b) = abi.decode(input, (bytes, bytes))
 ```
 
 The same definition is much cleaner in Core Solidity:
 
-```solidity
+```js
 let (a, b) = abi.decode(input, (uint256, uint256))
 ```
 
 Another common frustration with Classic Solidity is the syntactic noise required when defining array
 literals. Consider the following snippet:
 
-```solidity
+```js
 uint256[3] memory a = [1, 2, 3];
 ```
 
@@ -384,14 +383,14 @@ value to a variable with an incompatible type.
 
 In order for the previous definition be accepted, we can add an unintuitive type coercion to the first array element:
 
-```solidity
+```js
 uint256[3] memory a = [uint256(1), 2, 3];
 ```
 
 The constraint based inference algorithm in Core Solidity is a lot more general, and will allow us
 to omit this coercion:
 
-```solidity
+```js
 uint256[3] memory a = [1, 2, 3];
 ```
 
@@ -427,7 +426,6 @@ express the full range of high-level language constructs found in Classic Solidi
 - Algebraic datatypes & pattern matching
 - Type classes
 - Generics
-
 
 A SAIL variable is conceptually the same as a [Yul variable](https://docs.soliditylang.org/en/latest/yul.html#variable-declarations). The compiler will associate an EVM stack slot to it.
 SAIL has a single builtin type (`word`) that has the same range of values as a Classic Solidity
@@ -487,7 +485,7 @@ For presentation purposes we restrict ourselves to the fragment required to enco
 To begin we will construct the type `uint256`. In Classic Solidity the definition of this type and
 it's associated operations are all built-in language constructs. In SAIL, it is defined entirely in-language as a simple wrapper around a `word`. We also define a `Typedef` instance for it:
 
-```solidity
+```js
 data uint256 = uint256(word);
 
 instance uint256:Typedef(word) {
@@ -506,12 +504,12 @@ instance uint256:Typedef(word) {
 #### memory and bytes
 
 We can build types that represent pointers into the various EVM data regions by wrapping a
-`word`. Notice that in the following snippet the type parameter on the memory pointer is *phantom*
+`word`. Notice that in the following snippet the type parameter on the memory pointer is _phantom_
 (i.e. it appears only in the type, but is not mentioned in any of the value constructors). This is a
 common idiom in [ML family languages](https://en.wikipedia.org/wiki/Category:ML_programming_language_family) like Haskell or Rust that lets us enforce compile-time
 constraints without runtime overhead.
 
-```solidity
+```js
 data memory(T) = memory(word)
 ```
 
@@ -520,7 +518,7 @@ at runtime. Classic Solidity always
 requires that a data location is specified for a value of type `bytes`, so in Core Solidity we define it as
 an empty type with no value constructors. Empty types can only be used to instantiate phantom type parameters. This means that, as in Classic Solidity, instances of `bytes` cannot live on stack.
 
-```solidity
+```js
 data bytes;
 ```
 
@@ -532,7 +530,7 @@ memory structures containing references to storage.
 
 The last piece of machinery required for `abi.encode` is the `Proxy` type:
 
-```solidity
+```js
 data Proxy(T) = Proxy;
 ```
 
@@ -552,7 +550,7 @@ typeclass for ABI related metadata, note that since this class does not need to 
 actual value of the type being passed to it, we use a `Proxy` to keep our implementation as lean as
 possible.
 
-```solidity
+```js
 forall T . class T:ABIAttribs {
     // how many bytes should be used for the head portion of the abi encoding of `T`
     function headSize(ty : Proxy(T)) -> word;
@@ -571,7 +569,7 @@ here contains some extraneous details needed for encoding compound and dynamic t
 necessary for the simple `uint256` encoding we are implementing now. We present the full complexity
 to demonstrate that we have the machinery required for this harder cases.
 
-```solidity
+```js
 // types that can be abi encoded
 forall T . T:ABIAttribs => class T:ABIEncode {
     // abi encodes an instance of T into a memory region starting at basePtr
@@ -594,7 +592,7 @@ Finally we can define a top_level `abi_encode` function that handles the initial
 and free memory pointer updates (we have omitted the implementation of the low level
 `get_free_memory` and `set_free_memory` helpers for the sake of brevity):
 
-```solidity
+```js
 // top level encoding function.
 // abi encodes an instance of `T` and returns a pointer to the result
 forall T . T:ABIEncode => function abi_encode(val : T) -> memory(bytes) {
@@ -722,4 +720,3 @@ with a more secure, expressive, and mathematically sound toolkit for the next ge
 contracts. We invite you to join the discussions and share your perspective. Your input is crucial
 in helping us prioritize development and shape the future of the language, and comments are very
 welcome in the [feedback thread](TODO: LINK TO THREAD) for this post on our forum.
-
