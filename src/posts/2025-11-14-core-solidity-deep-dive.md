@@ -58,7 +58,7 @@ features:
 
 - Algebraic datatypes (also known as sum / product types) and pattern matching
 - Generics / parametric polymorphism
-- Traits / typeclasses
+- Traits / type classes
 - Type inference
 - Higher order and anonymous functions
 - Compile time evaluation
@@ -100,7 +100,7 @@ Classic Solidity. For example, an 18 decimal fixed point (a [wad](https://dappsy
 data wad = wad(uint256)
 ```
 
-The `wad` type (left-hand side) has a single value constructor `wad` (right-hand side) that holds a `uint256` as it's underlying
+The `wad` type (left-hand side) has a single value constructor `wad` (right-hand side) that holds a `uint256` as its underlying
 representation. Type names and value constructors live in
 separate namespaces and so can share names. Simple wrapper types like this will be erased by the compiler during the translation
 into Yul, meaning that `wad` has the exact same runtime representation as a `uint256`.
@@ -145,7 +145,7 @@ remaining states that have not yet been explicitly matched. Exhaustiveness is en
 compiler, ensuring that every possible state is handled exactly once.
 
 ```js
-function processAuction(state: State) -> State {
+function processAuction(state: AuctionState) -> AuctionState {
     match state {
     | NotStarted(reserve) =>
         require(msg.value >= reserve);
@@ -224,8 +224,8 @@ when working with them is `Typedef`:
 
 ```js
 forall T U . class T:Typedef(U) {
-    function abs(x:U) -> T;
-    function rep(x:T) -> U;
+    function abs(x : U) -> T;
+    function rep(x : T) -> U;
 }
 ```
 
@@ -235,11 +235,11 @@ pattern matching every time we want to unwrap a type. The instance for `wad` wou
 
 ```js
 instance wad:Typedef(uint256) {
-    function abs(u: uint256) -> wad {
+    function abs(u : uint256) -> wad {
         return wad(u);
     }
 
-    function rep(x: wad) -> uint256 {
+    function rep(x : wad) -> uint256 {
         match x {
         | wad(u) => return u;
         }
@@ -355,13 +355,13 @@ For example, assigning an expression to a variable in Classic Solidity can often
 types are already present in the expression being assigned:
 
 ```js
-(bytes memory a, bytes memory b) = abi.decode(input, (bytes, bytes))
+(bytes memory a, bytes memory b) = abi.decode(input, (bytes, bytes));
 ```
 
 The same definition is much cleaner in Core Solidity:
 
 ```js
-let (a, b) = abi.decode(input, (uint256, uint256))
+let (a, b) = abi.decode(input, (uint256, uint256));
 ```
 
 Another common frustration with Classic Solidity is the syntactic noise required when defining array
@@ -427,9 +427,9 @@ express the full range of high-level language constructs found in Classic Solidi
 - Type classes
 - Generics
 
-A SAIL variable is conceptually the same as a [Yul variable](https://docs.soliditylang.org/en/latest/yul.html#variable-declarations). The compiler will associate an EVM stack slot to it.
+A SAIL variable is conceptually the same as a [Yul variable](https://docs.soliditylang.org/en/v0.8.30/yul.html#variable-declarations). The compiler will associate an EVM stack slot to it.
 SAIL has a single builtin type (`word`) that has the same range of values as a Classic Solidity
-`bytes32` or `uint256`, and can semantically can be viewed as the type of an EVM stack slot. Contracts in SAIL are very low level (essentially just a runtime entrypoint and initcode
+`bytes32` or `uint256`, and can semantically be viewed as the type of an EVM stack slot. Contracts in SAIL are very low level (essentially just a runtime entrypoint and initcode
 entrypoint).
 
 Although our current implementation of SAIL uses Yul as an assembly language, this choice is largely
@@ -483,17 +483,17 @@ For presentation purposes we restrict ourselves to the fragment required to enco
 #### uint256
 
 To begin we will construct the type `uint256`. In Classic Solidity the definition of this type and
-it's associated operations are all built-in language constructs. In SAIL, it is defined entirely in-language as a simple wrapper around a `word`. We also define a `Typedef` instance for it:
+its associated operations are all built-in language constructs. In SAIL, it is defined entirely in-language as a simple wrapper around a `word`. We also define a `Typedef` instance for it:
 
 ```js
 data uint256 = uint256(word);
 
 instance uint256:Typedef(word) {
-    function abs(w: word) -> uint256 {
+    function abs(w : word) -> uint256 {
         return uint256(w);
     }
 
-    function rep(x: uint256) -> word {
+    function rep(x : uint256) -> word {
         match x {
         | uint256(w) => return w;
         }
@@ -513,7 +513,7 @@ constraints without runtime overhead.
 data memory(T) = memory(word)
 ```
 
-The [`bytes` type](https://docs.soliditylang.org/en/latest/types.html#bytes-and-string-as-arrays) in Classic Solidity represents a tightly packed byte array with a size only known
+The [`bytes` type](https://docs.soliditylang.org/en/v0.8.30/types.html#bytes-and-string-as-arrays) in Classic Solidity represents a tightly packed byte array with a size only known
 at runtime. Classic Solidity always
 requires that a data location is specified for a value of type `bytes`, so in Core Solidity we define it as
 an empty type with no value constructors. Empty types can only be used to instantiate phantom type parameters. This means that, as in Classic Solidity, instances of `bytes` cannot live on stack.
@@ -534,10 +534,10 @@ The last piece of machinery required for `abi.encode` is the `Proxy` type:
 data Proxy(T) = Proxy;
 ```
 
-As with the `memory` definition, the type parameter here is phantom, but unlike memory `Proxy`
+As with the `memory` definition, the type parameter here is phantom, but, unlike `memory`, `Proxy`
 carries no additional information at runtime. It exists only as a marker type that lets us pass
 information around at compile time. Types like this are completely zero cost (i.e. they are
-completely erased at runtime and do appear in the final compiled program at all).
+completely erased at runtime and do not appear in the final compiled program at all).
 
 Although somewhat esoteric, `Proxy` is very useful and gives us a lot of control over type inference
 and instance selection without needing to pass data at runtime where it is not needed. It is often
@@ -546,13 +546,13 @@ used in both Haskell (where it is also called `Proxy`) and Rust (`std::marker::P
 #### abi.encode
 
 Now we are ready to implement Classic Solidity's `abi.encode` in SAIL. We start by defining a
-typeclass for ABI related metadata, note that since this class does not need to care about the
+type class for ABI related metadata. Note that since this class does not need to care about the
 actual value of the type being passed to it, we use a `Proxy` to keep our implementation as lean as
 possible.
 
 ```js
 forall T . class T:ABIAttribs {
-    // how many bytes should be used for the head portion of the abi encoding of `T`
+    // how many bytes should be used for the head portion of the ABI encoding of `T`
     function headSize(ty : Proxy(T)) -> word;
     // whether or not `T` is a fully static type
     function isStatic(ty : Proxy(T)) -> bool;
@@ -567,20 +567,20 @@ instance uint256:ABIAttribs {
 Now we define another class that handles the low level encoding into memory. The class presented
 here contains some extraneous details needed for encoding compound and dynamic types that are not be
 necessary for the simple `uint256` encoding we are implementing now. We present the full complexity
-to demonstrate that we have the machinery required for this harder cases.
+to demonstrate that we have the machinery required for these harder cases.
 
 ```js
 // types that can be abi encoded
 forall T . T:ABIAttribs => class T:ABIEncode {
     // abi encodes an instance of T into a memory region starting at basePtr
     // offset gives the offset in memory from basePtr to the first empty byte of the head
-    // tail gives the index in memory of the first empty byte of the tail
-    function encodeInto(x:T, basePtr:word, offset:word, tail:word) -> word /* newTail */;
+    // tail gives the position in memory of the first empty byte of the tail
+    function encodeInto(x : T, basePtr : word, offset : word, tail : word) -> word /* newTail */;
 }
 
 instance uint256:ABIEncode {
     // a unit256 is written directly into the head
-    function encodeInto(x:uint256, basePtr:word, offset:word, tail:word) -> word {
+    function encodeInto(x : uint256, basePtr : word, offset : word, tail : word) -> word {
         let repx : word = Typedef.rep(x);
         assembly { mstore(add(basePtr, offset), repx) }
         return tail;
@@ -588,7 +588,7 @@ instance uint256:ABIEncode {
 }
 ```
 
-Finally, we can define a top_level `abi_encode` function that handles the initial memory allocation
+Finally, we can define a top-level `abi_encode` function that handles the initial memory allocation
 and free memory pointer updates (we have omitted the implementation of the low level
 `get_free_memory` and `set_free_memory` helpers for the sake of brevity):
 
@@ -641,29 +641,29 @@ and may be subject to extensive change. We are not yet in a position where we fe
 committing to concrete timelines. We will provide more details as
 we get closer to a production implementation.
 
-We have a prototype implemented in a [separate repository](https://github.com/argotorg/solcore). We
+We have a prototype implemented in a separate repository: [solcore](https://github.com/argotorg/solcore). We
 can typecheck SAIL programs, and have a code generation pipeline down to Yul implemented. We still
 want to implement at least compile time evaluation and a module system before we will consider the
 type system to be finalized. We have a rudimentary standard library implemented, and enough
 desugaring stages built out to implement the most fundamental features of Classic Solidity. We can
-produce ABI compatible contracts, with dispatch, abi encoding / decoding, and storage access.
+produce ABI compatible contracts, with dispatch, ABI encoding / decoding, and storage access.
 
 There is still significant work remaining at the prototype stage before we can begin to consider a
 full production implementation. We want to finalize the type system, flesh out the standard library,
 and write enough code to be confident that what we have is sufficient to support the full range of
-features that we think are necessary. We need to thoroughly document the typesystem and compiler
+features that we think are necessary. We need to thoroughly document the type system and compiler
 internals. We also expect to spend time working with existing power users and library authors to
 gather feedback and make any necessary changes.
 
 Once we are confident that the prototype is stable, work will split into two parallel streams:
 
-1. Production implementation: we will reimplement the typechecker, desugaring and yul generation
+1. Production implementation: we will reimplement the typechecker, desugaring and Yul generation
    passes in a systems language (e.g. Rust, C++, Zig), and integrate it into solc proper. This
    implementation will focus on correctness, performance, and providing the best possible
    diagnostics and error messages.
-2. Executable Formal Semantics: we will work to mechanize our existing latex specification in a
+2. Executable Formal Semantics: we will work to mechanize our existing LaTeX specification in a
    theorem proving environment (likely Lean). This will be used to build confidence in our
-   production implementation, as well as the standard library and typesystem itself.
+   production implementation, as well as the standard library and type system itself.
 
 Once the production implementation is relatively stable. There will be a period of time in which
 Core Solidity is available as an experimental feature, but not yet marked as production ready. We
@@ -719,4 +719,4 @@ Core Solidity represents a foundational re-imagining of the language, designed t
 with a more secure, expressive, and mathematically sound toolkit for the next generation of smart
 contracts. We invite you to join the discussions and share your perspective. Your input is crucial
 in helping us prioritize development and shape the future of the language, and comments are very
-welcome in the [feedback thread](TODO: LINK TO THREAD) for this post on our forum.
+welcome in the [feedback thread](https://forum.soliditylang.org/t/call-for-feedback-core-solidity-deep-dive/3643) for this post on our forum.
