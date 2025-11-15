@@ -441,7 +441,7 @@ Almost 11% selected “OTHER” and specified some of their most significant pai
 
 ### Documentation
 
-When asked if the participants find the official documentaiton helpful, 68% of the survey respondents reported the Solidity documentation to be helpful, followed by 29.1% who consider it somewhat useful.
+When asked if the participants find the official documentation helpful, 68% of the survey respondents reported the Solidity documentation to be helpful, followed by 29.1% who consider it somewhat useful.
 
 As low as 2.9% voted that they do not find the docs useful at all.
 
