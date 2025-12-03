@@ -115,12 +115,12 @@ export default function Home({
               <Box>
                 <Text lineHeight="180%" fontSize="md" mb={4}>
                   <Link
-                    href="/blog/2025/05/07/solidity-0.8.30-release-announcement/"
+                    href="/blog/2025/12/03/solidity-0.8.31-release-announcement/"
                     fontWeight="bold"
                   >
-                   We just released the Solidity Compiler v0.8.30.
+                   We just released the Solidity Compiler v0.8.31.
                   </Link>{' '}
-                  This latest version is a maintenance release in light of the Pectra Ethereum network upgrade scheduled for May 7, 2025 and changes the default EVM version from cancun to prague.
+                  This version of the compiler brings support for the new EVM features introduced by the Fusaka network upgrade, extends the functionality of storage layout specifiers and deprecates the first batch of features scheduled for removal in the 0.9.0 breaking release. We are also adding official ARM Linux builds.
                 </Text>
               </Box>
             </Flex>
