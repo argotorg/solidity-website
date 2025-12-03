@@ -3,7 +3,6 @@ import matter from 'gray-matter'
 import gfm from 'remark-gfm'
 import { ParsedUrlQuery } from 'querystring'
 import ReactMarkdown from 'react-markdown'
-import ChakraUIRenderer from 'chakra-ui-markdown-renderer'
 import type { GetStaticPaths, GetStaticProps } from 'next/types'
 import {
   Box,
@@ -144,7 +143,7 @@ const EventPage: React.FC<EventPost> = ({ frontmatter, content }) => {
           {/* Embedded YouTube video */}
           {youtube && <YouTube url={youtube} mb={20} mx="auto" />}
           <ReactMarkdown
-            components={ChakraUIRenderer(EventMDStyles)}
+            components={EventMDStyles}
             remarkPlugins={[gfm]}
             skipHtml
           >
