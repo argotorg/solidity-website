@@ -73,16 +73,14 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
-      - name: Build with Next.js
+      - name: Build and static HTML export with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
         env:
           GITHUB_TOKEN_READ_ONLY: ${{ secrets.TOKEN_READ_ONLY }}
-      - name: Static HTML export with Next.js
-        run: ${{ steps.detect-package-manager.outputs.runner }} next export -o docs
       - name: Upload artifact
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
         with:
-          path: ./docs
+          path: ./out
 
   # Deployment job
   deploy:
