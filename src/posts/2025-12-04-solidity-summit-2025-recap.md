@@ -15,7 +15,7 @@ The full agenda of the day can be found [on the Solidity Summit page](https://ww
 
 ## Recordings and Slides
 
-Sorted by topic, here are all talks with links to the recordings and slides.
+Sorted by topic, here are all the talks with links to the recordings and slides.
 
 ### Introductory Remarks
 
