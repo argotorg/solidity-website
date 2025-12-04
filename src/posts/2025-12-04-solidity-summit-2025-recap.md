@@ -11,7 +11,7 @@ The 2025 edition of the Solidity Summit took place in Buenos Aires during Devcon
 
 A central message from the Solidity team this year was the importance of the ongoing compiler backend overhaul - practical work delivering immediate performance gains like faster compilation times and representing the team's current priority. In parallel, Core Solidity represents the team's research effort aimed at ensuring the language's future relevance, though its impact will materialize over a longer timeline. Alongside this, speakers showcased work from across the broader tooling, auditing, and developer ecosystem.
 
-The full agenda of the day can be found [on the Solidity Summit page](https://www.soliditylang.org/summit/) and you can watch all talks by browsing through the individual videos on the [YouTube playlist](add link).
+The full agenda of the day can be found [on the Solidity Summit page](https://www.soliditylang.org/summit/) and you can watch all talks by browsing through the individual videos on the [YouTube playlist](https://www.youtube.com/playlist?list=PLX8x7Zj6Vezk5rQhE0g1f32m6-Y_UtoG3).
 
 ## Recordings and Slides
 
@@ -96,6 +96,11 @@ This category highlighted forward-looking ecosystem talks: experimental toolchai
    
    * [Recording](https://youtu.be/RGZNEVuMKmE)
    * [Slides](https://github.com/argotorg/solidity-website/blob/main/public/summit/2025/slides/solx_an_LLVM-based_Solidity_toolchain-Oleksandr_Zarudnyi.pdf)
+  
+* How Type-Driven Development Can Turbocharge your Contract's Security - philogy (Spearbit)
+   
+   * [Recording](https://youtu.be/_lZu1c7tZ-0)
+   * [Slides](https://github.com/argotorg/solidity-website/blob/main/public/summit/2025/slides/How_Type-Driven_Development_Can_Turbocharge_your_Contract_s_Security-philogy.pdf)
 
 ### Tooling and Security
 
@@ -130,11 +135,6 @@ Beyond compiler and language design, the Summit included sessions on debugging s
    
    * [Recording](https://youtu.be/fgVSp2Hwi18)
    * [Slides](https://github.com/argotorg/solidity-website/blob/main/public/summit/2025/slides/Preventing_Hacks_with_Security_Rules_Written_in_Solidity-odysseas.pdf)
-
-* How Type-Driven Development Can Turbocharge your Contract's Security - philogy (Spearbit)
-   
-   * [Recording](https://youtu.be/_lZu1c7tZ-0)
-   * [Slides](https://github.com/argotorg/solidity-website/blob/main/public/summit/2025/slides/How_Type-Driven_Development_Can_Turbocharge_your_Contract_s_Security-philogy.pdf)
 
 * Hardhat 3 is here: what's new and why you should use it - John Kane (Nomic Foundation)
     
