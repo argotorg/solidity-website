@@ -51,6 +51,14 @@ const overrides = {
         lineHeight: '1.7',
         '&:not(:last-of-type)': { mb: '4' },
       },
+      ul: {
+        listStyleType: 'disc',
+        listStylePosition: 'inside',
+        pl: '4',
+        '& li': {
+          mb: '2',
+        },
+      },
     }),
   },
   textStyles,

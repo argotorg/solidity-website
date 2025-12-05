@@ -7,7 +7,7 @@ coordsOverride:
 mapLabel: Location
 startDate: 2025-11-18
 endDate: 2025-11-18
-imageSrc: /assets/summit_star.png
+imageSrc: /assets/summit_2025.png
 ctaLinks:
   - label: Attend
     href: https://devconnect.org/calendar?event=soliditysummit
@@ -83,7 +83,7 @@ This year, presentations and discussions will evolve around the following topics
 You can find the agenda for Solidity Summit 2025 below.
 
 | Time  | Title                                                                        | Speaker (Affiliation)                                                   |
-|-------|------------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| ----- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | 9:00  | +++ Registrations Open +++                                                   |                                                                         |
 | 10:00 | Opening & Welcome Note                                                       | Vishwa Mehta (Solidity &#124; Argot Collective)                         |
 | 10:10 | From EF to Argot: Solidity’s New Home                                        | Lea Schmitt (Argot Collective)                                          |
@@ -103,7 +103,7 @@ You can find the agenda for Solidity Summit 2025 below.
 | 16:00 | Preventing Hacks with Security Rules Written in Solidity                     | odysseas (Phylax Systems)                                               |
 | 16:15 | How Type-Driven Development Can Turbocharge your Contract's Security         | philogy (Spearbit)                                                      |
 | 16:45 | All the things I wish (native) Solidity would let me do                      | Hadrien Croubois (OpenZeppelin)                                         |
-| 17:15 | The Death of the __gap: Custom Storage Layouts                               | Eric Marti Haynes (Nethermind)                                          |
+| 17:15 | The Death of the \_\_gap: Custom Storage Layouts                             | Eric Marti Haynes (Nethermind)                                          |
 | 17:45 | Hardhat 3 is here: what's new and why you should use it                      | John Kane (Nomic Foundation)                                            |
 | 18:15 | Solar Invictus                                                               | DaniPopes (Solar)                                                       |
 | 18:45 | Thank you note                                                               | Vishwa Mehta (Solidity &#124; Argot Collective)                         |
