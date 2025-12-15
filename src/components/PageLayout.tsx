@@ -38,15 +38,15 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
         zIndex={9999}
         position="relative"
       >
-        Join us for the{' '}
+        Thanks for joining the Solidity Summit 2025 🇦🇷 The{' '}
         <Link
-          href="/summit"
+          href="/blog/2025/12/04/solidity-summit-2025-recap/"
           textDecoration="underline"
           _hover={{ opacity: 0.8 }}
         >
-          Solidity Summit
+          recap and recordings
         </Link>{' '}
-        on Nov 18th Tuesday in Buenos Aires! 🇦🇷
+        are live!
       </Box>
 
       <Box textStyle="body" maxW="container.xl" mx="auto">
