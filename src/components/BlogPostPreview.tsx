@@ -33,7 +33,7 @@ export const BlogPostPreview: React.FC<BlogPostPreviewProps> = ({
         {getBlogSubtitle(author, date)}
       </Text>
       <CategoryPill category={category} skipLink={isCategoryPage} />
-      <Text mb={4} maxW="container.md">
+      <Text mb={4}>
         {content}
       </Text>
       <Link href={url}>Read more</Link>
