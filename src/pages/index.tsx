@@ -213,7 +213,7 @@ export default function Home({
 
           {/* Latest from the blog */}
           <Section px={0}>
-            <Text textStyle="h3" fontSize="xl">
+            <Text textStyle="h6-mono" color="primary">
               Latest from the blog
             </Text>
             <BlogSectionPreview postsData={previewBlogPosts} />
@@ -272,7 +272,7 @@ export default function Home({
 
           {/* Past events */}
           <Section gap={6} px={0}>
-            <Text as="h3" fontSize="xl" color="primary" fontWeight="bold">
+            <Text as="h3" textStyle="h6-mono" color="primary">
               Past events
             </Text>
             <EventPreview events={allEvents} />

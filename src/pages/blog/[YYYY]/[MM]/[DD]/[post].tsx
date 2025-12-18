@@ -59,11 +59,11 @@ const BlogPostPage: React.FC<BlogPostProps> = ({
       as="main"
       id={MAIN_CONTENT_ID}
       px={{ base: 4, md: 8 }}
-      maxW="container.md"
+      maxW="container.lg"
       mx="auto"
     >
       <BlogHero frontmatter={frontmatter} />
-      <BlogPost content={content} maxW="container.md" />
+      <BlogPost content={content} maxW="container.lg" />
       <PostNavigation availableURLs={availableURLs} />
     </Box>
   </>
