@@ -100,7 +100,7 @@ const CategoryPage: NextPage<Props> = ({ categoryPostsData, category }) => {
         <Section
           direction="column"
           gap={16}
-          maxW="container.md"
+          maxW="container.lg"
           pt={12}
           pb={64}
           fontSize="md"

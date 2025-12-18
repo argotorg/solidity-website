@@ -20,7 +20,7 @@ export default function UseCases() {
         </Hero>
         <Section
           direction="column"
-          maxW="container.md"
+          maxW="container.lg"
           mx="auto"
           gap={24}
           py={20}

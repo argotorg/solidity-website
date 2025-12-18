@@ -44,7 +44,7 @@ export default function About() {
           as="article"
           direction="column"
           gap={4}
-          maxW="container.md"
+          maxW="container.lg"
           py={24}
           mx="auto"
           bgImg="url(/assets/about-bg.svg)"
