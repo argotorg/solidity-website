@@ -54,8 +54,16 @@ const overrides = {
       },
       ul: {
         listStyleType: 'disc',
-        listStylePosition: 'inside',
-        pl: '4',
+        listStylePosition: 'outside',
+        pl: '6',
+        '& li': {
+          mb: '2',
+        },
+      },
+      ol: {
+        listStyleType: 'decimal',
+        listStylePosition: 'outside',
+        pl: '6',
         '& li': {
           mb: '2',
         },
