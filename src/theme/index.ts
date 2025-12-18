@@ -49,7 +49,6 @@ const overrides = {
       },
       p: {
         lineHeight: '1.7',
-        textAlign: 'justify',
         '&:not(:last-of-type)': { mb: '4' },
       },
       ul: {

@@ -49,7 +49,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
         are live!
       </Box>
 
-      <Box textStyle="body" w="100%" maxW="container.xl" mx="auto">
+      <Box textStyle="body" maxW="container.xl" mx="auto">
         <Header />
         <Component {...pageProps} />
         <Footer />
