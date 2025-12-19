@@ -121,7 +121,7 @@ export default function Home({
                    We just released the Solidity Compiler v0.8.33.
                   </Link>{' '}
                   This hotfix release addresses an internal compiler error introduced in v0.8.32, which fixed a long-standing bug affecting array operations at
-                  the storage boundary and added support for emitting events and reverting with errors through module namespaces.
+                  the storage boundary and added support for emitting events and reverting with errors namespaced using modules.
                 </Text>
               </Box>
             </Flex>
