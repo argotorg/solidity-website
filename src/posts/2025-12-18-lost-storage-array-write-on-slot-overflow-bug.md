@@ -9,12 +9,12 @@ category: Security Alerts
 
 
 On November 10, 2024, a bug in the Solidity code generator was found by [@Audittens](https://twitter.com/Audittens).
-The bug was initially reported to affect deletion and partial assignment operations on fixed-length storage arrays that cross the `2**256` slot boundary.
+The bug was initially reported to affect deletion and partial assignment operations on fixed-length storage arrays that cross the `2**256`-slot boundary.
 Two instances were reported: one in the IR pipeline and one in the evmasm pipeline.
 During our further investigation, we discovered a third instance affecting copying from arrays placed at the storage boundary.
 The effect of the bug is that such storage cleanup or copy operations may not be performed at all.
 
-All three instances represent the same kind of mistake in the code generation logic: incorrect implementation of comparison between storage pointers that may wrap around the `2**256` boundary.
+All three instances represent the same kind of mistake in the code generation logic: incorrect implementation of comparison between storage pointers that may wrap around the `2**256`-slot boundary.
 The occurrences in both compilation pipelines are related, as the utility functions in the IR pipeline were written with access to (and sometimes directly translated from) the ones in the evmasm pipeline.
 
 We initially classified this as a case of undefined behavior, based on the fact that an affected array would typically have to clash with contract's declared state variables and that the compiler already warns the user about the risk of defining extremely large arrays.
@@ -29,7 +29,8 @@ While the potential impact is high if triggered, the practical security risk to 
 ### Storage as a Circular Space
 
 Solidity's storage can be conceptualized as a ring buffer with `2**256` slots.
-Static arrays are stored contiguously. Therefore, when arrays are positioned near the storage boundary, they can wrap around the end of the address space (i.e., slot `2**256-1`), continuing from the beginning (slot `0`).
+Static arrays are stored contiguously.
+Therefore, when arrays are positioned near the storage boundary, they can wrap around the end of the address space (i.e., slot `2**256-1`), continuing from the beginning (slot `0`).
 
 For example, an array beginning at slot `2**256 - 5` with 10 `uint256` items would occupy these slots:
 
@@ -51,7 +52,7 @@ For dynamic arrays and mappings, its main purpose is to reserve a slot that can 
 The resulting location of the dynamic component is effectively random in the vast `2**256`-slot address space, which ensures that dynamic types can expand without overlapping other storage variables.
 
 The above scheme is applied recursively to each element of a composite type (array, struct, mapping), so a deeply nested structure can have multiple dynamic components at each nesting level.
-For example `struct S { uint x; uint[][] y; mapping (uint => uint) z}` uses 3 slots in its static component.
+For example `struct S { uint x; uint[][] y; mapping (uint => uint) z; }` uses 3 slots in its static component.
 `y`'s slot stores the array size and the static components of its elements are laid out contiguously, starting at `keccak256(y.slot)`.
 Each element is a dynamic array and therefore has its own dynamic component.
 `z`'s slot remains empty while each value gets a different position, derived from `z.slot` and the key.
@@ -70,12 +71,13 @@ There are essentially two situations in which solc emits bytecode that loops ove
 At the language level, a cleanup loop may be a part of the code generated for:
 
 - *Deletion*: Using `delete` on an array clears all its elements.
-- *Partial Assignment*: When assigning one static array to another, the target array's elements are overwritten.
-    If the target array is longer than the source, the remaining elements must be cleared.
-    For example, assigning a 3-element array to a 10-element array overwrites the first 3 elements and clears the remaining 7.
-- *Full Assignment*: When assigning a shorter dynamic array to a longer one, cleanup must be performed on the excess elements.
+- *Static Array Assignment*: When assigning one static array to another, the target array's elements are overwritten.
+    In the *partial assignment* case, where the target array is longer than the source, the remaining elements must be cleared.
+    For example, assigning an `uint[3]` array to `uint[10]` array overwrites the first 3 elements and clears the remaining 7.
+- *Dynamic Assignment*: When assigning a shorter dynamic array to a longer one, cleanup must be performed on the excess elements.
 - *Element removal*: Calling `<array>.pop()` removes the last element and clears its storage.
-    For complex types (structs, nested arrays), this triggers the cleanup loop.
+    For complex types containing nested arrays this triggers the cleanup loop.
+
 
 A copy loop is a part of:
 
@@ -97,7 +99,7 @@ The fix replaces pointer-based comparisons with index-based iteration, which cor
 
 ## Which Contracts Are Affected?
 
-You may be affected if your contract uses an array that crosses the `2**256` slot boundary.
+You may be affected if your contract uses an array that crosses the `2**256`-slot boundary.
 More specifically, *both* of the following conditions must be met for the bug to be triggered:
 
 1. An array in storage is positioned in such a way that its first slot is at a higher address than its last slot.
@@ -105,11 +107,9 @@ More specifically, *both* of the following conditions must be met for the bug to
     - Cleanup (i.e., filling the area with zeros).
     - Copying content into another array.
 
-The cleanup operation can be triggered by deletion, partial assignment, or element removal (see the Background section for details).
-
 Since Solidity does not allow storage layouts whose static portion would overlap the storage boundary, such an array has to be intentionally created in a way that bypasses the check:
 - Through the manipulation of the start slot of a static storage array using inline assembly.
-- Through a declaration of a dynamic storage array or mapping whose items are so large that the data area extends past the end of storage and contain a small static array that can be easily predicted to be placed exactly at the edge.
+- Through the declaration of a dynamic storage array or mapping whose items are so large that the data area extends past the end of storage and contain a small static array that can be easily predicted to be placed exactly at the edge.
 
 The bug affects cleanup operations in both the IR and evmasm pipelines, as well as copy operations in the evmasm pipeline.
 The bug is independent of the use of the optimizer.
@@ -300,15 +300,13 @@ For `_VERSION = "v 2.2.3"`, the vulnerable account's balance array has the follo
 
 On affected compiler versions the assertion in `testBug()` does not hold.
 
-This illustrates how contrived triggering this bug is: it requires data structures large enough to wrap around the entire `2**256` storage space.
-
 ## Severity Assessment
 
 If the bug is actually triggered, the **potential impact is high**.
 Straightforward operations like `delete` or array assignments not storing the right values represents a serious issue in terms of code generation correctness, and could lead to storage corruption and possible loss of funds in affected contracts.
 
 However, from a security standpoint, the **likelihood of exploitation is extremely low**.
-Running into this issue accidentally is highly unlikely because it depends on the same property that makes mappings secure: the storage address space is so enormous (2**256 slots) that it's nearly impossible to hit a specific address without deliberate manipulation.
+Running into this issue accidentally is highly unlikely because it depends on the same property that makes mappings secure: the storage address space is so enormous (`2**256` slots) that it's nearly impossible to hit a specific address without deliberate manipulation.
 
 ### Why Intentional Attacks Are Unlikely
 
