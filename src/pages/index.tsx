@@ -115,12 +115,13 @@ export default function Home({
               <Box>
                 <Text lineHeight="180%" fontSize="md" mb={4}>
                   <Link
-                    href="/blog/2025/12/03/solidity-0.8.31-release-announcement/"
+                    href="/blog/2025/12/18/solidity-0.8.32-0.8.33-release-announcement/"
                     fontWeight="bold"
                   >
-                   We just released the Solidity Compiler v0.8.31.
+                   We just released the Solidity Compiler v0.8.33.
                   </Link>{' '}
-                  This version of the compiler brings support for the new EVM features introduced by the Fusaka network upgrade, extends the functionality of storage layout specifiers and deprecates the first batch of features scheduled for removal in the 0.9.0 breaking release. We are also adding official ARM Linux builds.
+                  This hotfix release addresses an internal compiler error introduced in v0.8.32, which fixed a long-standing bug affecting array operations at
+                  the storage boundary and added support for emitting events and reverting with errors namespaced using modules.
                 </Text>
               </Box>
             </Flex>
