@@ -84,6 +84,17 @@ const overrides = {
         overflow: 'auto hidden',
         my: 4,
       },
+      // Figure and figcaption styles
+      'article figure': {
+        margin: '2rem 0',
+        textAlign: 'center',
+      },
+      'article figcaption': {
+        marginTop: '0.5rem',
+        fontSize: '0.9em',
+        fontStyle: 'italic',
+        color: 'text',
+      },
     }),
   },
   textStyles,

@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import gfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import rehypeRaw from 'rehype-raw'
 import { MDStyles } from '@/styles'
 
 interface BlogPostProps extends BoxProps {
@@ -15,7 +16,7 @@ export const BlogPost: React.FC<BlogPostProps> = ({ content, ...boxProps }) => {
         <ReactMarkdown
           components={MDStyles}
           remarkPlugins={[gfm, remarkMath]}
-          rehypePlugins={[rehypeKatex]}
+          rehypePlugins={[rehypeRaw, rehypeKatex]}
         >
           {content}
         </ReactMarkdown>
