@@ -67,6 +67,23 @@ const overrides = {
           mb: '2',
         },
       },
+      // KaTeX styles - prevent global reset from breaking math rendering
+      '.katex *': {
+        padding: 'revert !important',
+        margin: 'revert !important',
+      },
+      '.katex .frac-line': {
+        borderBottomWidth: '0.04em !important',
+        borderBottomStyle: 'solid !important',
+        borderBottomColor: 'currentColor !important',
+      },
+      '.katex .msupsub': {
+        textAlign: 'left',
+      },
+      '.math-display': {
+        overflow: 'auto hidden',
+        my: 4,
+      },
     }),
   },
   textStyles,
