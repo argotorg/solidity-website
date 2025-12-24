@@ -1,10 +1,5 @@
 import { Box } from '@chakra-ui/react'
-import {
-  motion,
-  useTransform,
-  useScroll,
-  isValidMotionProp,
-} from 'framer-motion'
+import { motion, useTransform, useScroll } from 'framer-motion'
 
 const labels = [
   'pragma',
@@ -34,7 +29,7 @@ export const PragmaWatermark: React.FC = () => {
       aria-hidden
     >
       <motion.aside style={{ y }}>
-        {labels.map((label, i) => (
+        {labels.map((label) => (
           <Box
             key={label}
             fontFamily="mono"

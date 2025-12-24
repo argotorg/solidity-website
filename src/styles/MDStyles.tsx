@@ -1,13 +1,4 @@
-import {
-  Box,
-  Divider,
-  Flex,
-  Heading,
-  Image,
-  Stack,
-  Table,
-  Text,
-} from '@chakra-ui/react'
+import { Divider, Heading, Image, Stack, Text } from '@chakra-ui/react'
 import { Code, Link } from '@/components'
 // TODO: Debug tables
 

@@ -6,7 +6,6 @@ import {
   ButtonLink,
   CompilerPlayground,
   ContributingCards,
-  EventCard,
   EventPreview,
   Hero,
   Link,
@@ -118,10 +117,13 @@ export default function Home({
                     href="/blog/2025/12/18/solidity-0.8.32-0.8.33-release-announcement/"
                     fontWeight="bold"
                   >
-                   We just released the Solidity Compiler v0.8.33.
+                    We just released the Solidity Compiler v0.8.33.
                   </Link>{' '}
-                  This hotfix release addresses an internal compiler error introduced in v0.8.32, which fixed a long-standing bug affecting array operations at
-                  the storage boundary and added support for emitting events and reverting with errors namespaced using modules.
+                  This hotfix release addresses an internal compiler error
+                  introduced in v0.8.32, which fixed a long-standing bug
+                  affecting array operations at the storage boundary and added
+                  support for emitting events and reverting with errors
+                  namespaced using modules.
                 </Text>
               </Box>
             </Flex>
@@ -146,7 +148,11 @@ export default function Home({
               </Link>
               .
             </Text>
-            <ButtonLink href="https://docs.soliditylang.org/en/latest/installing-solidity.html" variant="solid" mt={8}>
+            <ButtonLink
+              href="https://docs.soliditylang.org/en/latest/installing-solidity.html"
+              variant="solid"
+              mt={8}
+            >
               Get started
             </ButtonLink>
           </ShowcaseContent>
@@ -160,9 +166,9 @@ export default function Home({
           <ShowcaseSection startWithVisual px={0}>
             <ShowcaseContent title="Contribute to Solidity">
               <Text>
-                Solidity continues to improve with help from our global community.
-                Check out these ways to get involved and contribute to the
-                Solidity project.
+                Solidity continues to improve with help from our global
+                community. Check out these ways to get involved and contribute
+                to the Solidity project.
               </Text>
             </ShowcaseContent>
             <ShowcaseVisual>
@@ -184,26 +190,21 @@ export default function Home({
           <ShowcaseSection px={0}>
             <ShowcaseContent title="Stay Updated">
               <Text>
-              Stay always up-to-date by following the {' '}
-              <Link
-                href="https://soliditylang.org/blog/"
-                fontWeight="bold"
-              >
-                Solidity blog
-              </Link>.
+                Stay always up-to-date by following the{' '}
+                <Link href="https://soliditylang.org/blog/" fontWeight="bold">
+                  Solidity blog
+                </Link>
+                .
               </Text>
               <Text>
                 You can see the upcoming changes for the next breaking release
                 by switching from the default branch (<Code>develop</Code>) to
                 the <Code>breaking branch</Code>. You can actively shape
                 Solidity by providing your input and participating in the
-                language design in the {' '}
-              <Link
-                href="https://forum.soliditylang.org/"
-                fontWeight="bold"
-              >
-                Solidity forum
-              </Link>
+                language design in the{' '}
+                <Link href="https://forum.soliditylang.org/" fontWeight="bold">
+                  Solidity forum
+                </Link>
                 and participating in the yearly Solidity developer surveys.
               </Text>
             </ShowcaseContent>
@@ -232,8 +233,8 @@ export default function Home({
           <ShowcaseSection startWithVisual>
             <ShowcaseContent title="Playground">
               <Text>
-                Try Solidity for yourself in this simple compiler. For a more fully
-                featured browser-based IDE, try using{' '}
+                Try Solidity for yourself in this simple compiler. For a more
+                fully featured browser-based IDE, try using{' '}
                 <Link href="https://remix.ethereum.org">Remix</Link>.
               </Text>
             </ShowcaseContent>
