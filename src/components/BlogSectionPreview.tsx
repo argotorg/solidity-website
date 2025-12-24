@@ -1,4 +1,4 @@
-import { Grid, Text } from '@chakra-ui/react'
+import { Grid } from '@chakra-ui/react'
 import { BlogCard } from '@/components'
 import type { BlogPostProps } from '@/interfaces'
 
