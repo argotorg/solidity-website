@@ -1,6 +1,6 @@
 import { CategoryPill } from '@/components'
 import { CATEGORIES_PATH_MAP } from '@/constants'
-import type { Category, CategoryUrl } from '@/interfaces'
+import type { Category } from '@/interfaces'
 import { Flex, type FlexProps } from '@chakra-ui/react'
 
 const categories: string[] = Object.keys(CATEGORIES_PATH_MAP)
