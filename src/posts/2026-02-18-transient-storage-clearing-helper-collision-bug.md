@@ -308,5 +308,5 @@ std::string const functionName =
 
 We would like to thank [Hexens](https://hexens.io/) for discovering and reporting this bug with thorough analysis and clear reproduction cases.
 Much of the technical detail in this post is based on their report.
-Hexens have also published their own analysis of the bug [here](https://hexens.io/research/solidity-compiler-bug-tstore-poison).
+Hexens have also published [their own analysis of the bug](https://hexens.io/research/solidity-compiler-bug-tstore-poison).
 We would also like to thank [SEAL 911](https://securityalliance.org/our-work/seal-911) for their swift response and support in scanning all EVM-compatible chains for affected contracts, and [Dedaub](https://dedaub.com/) for their assistance in the identification effort.
