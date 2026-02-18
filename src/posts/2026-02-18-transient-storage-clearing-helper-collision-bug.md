@@ -208,7 +208,7 @@ In practice, the affected pattern has proven to be very uncommon.
 ## Reaction and Precautions
 
 Following the report, a coordinated effort was undertaken to identify deployed contracts matching the affected pattern across all EVM-compatible chains.
-This effort was carried out with the support of SEAL 911, Dedaub, and Hexens.
+This effort was carried out with the support of SEAL 911, Etherscan, Dedaub, and Hexens.
 Three affected contracts were identified, and the respective teams were notified.
 None of the affected contracts were part of public applications running in production with external user interactions, and the funds at risk were insignificant.
 
