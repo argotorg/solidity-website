@@ -51,7 +51,7 @@ Since transient arrays, mappings, and structs are not yet supported in Solidity,
 Any operation that clears persistent storage of a matching value type can produce the `sstore` variant:
 
 - **Direct deletes**: `delete <value-type>`.
-    This includes values nested in more complex types, e.g. `delete mapping[key]` or `delete array[index]` where the element is a value type.
+  This includes values nested in more complex types, e.g. `delete mapping[key]` or `delete array[index]` where the element is a value type.
 - **Array shrinking**: `.pop()`, `delete <array>`, shrinking dynamic arrays by assigning a shorter memory/calldata array, assigning `new T[](0)`
 - **Struct clearing**: `delete <struct>` (recurses into each member)
 
@@ -195,6 +195,7 @@ Unlike many past compiler bugs, this one can be triggered without the use of inl
 The impact depends on the direction of the collision:
 
 - **Transient `delete` uses `sstore` instead of `tstore`**:
+
   - Unintended write to persistent storage - the operation writes zero to a persistent slot, most commonly slot 0, which frequently holds `owner`, `_initialized`, or similar access-control variables.
   - Transient variable not cleared - the transient value remains set, which can cause subsequent reads to return stale values (e.g., a reentrancy lock that remains set for the rest of the transaction).
 
@@ -309,4 +310,4 @@ std::string const functionName =
 We would like to thank [Hexens](https://hexens.io/) for discovering and reporting this bug with thorough analysis and clear reproduction cases.
 Much of the technical detail in this post is based on their report.
 Hexens have also published [their own analysis of the bug](https://hexens.io/research/solidity-compiler-bug-tstore-poison).
-We would also like to thank [SEAL 911](https://securityalliance.org/our-work/seal-911) for their swift response and support in scanning all EVM-compatible chains for affected contracts, and [Dedaub](https://dedaub.com/) for their assistance in the identification effort.
+We would also like to thank [SEAL 911](https://securityalliance.org/our-work/seal-911) for their swift response and support in scanning all EVM-compatible chains for affected contracts, [Dedaub](https://dedaub.com/) for their assistance in the identification effort, and [Etherscan](https://etherscan.io/) for providing all the data needed for the these efforts to be possible.
