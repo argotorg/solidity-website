@@ -39,7 +39,7 @@ Importantly, while the transition will be gradual with Classic and Core contract
   - [Recording](https://youtu.be/pk7SjOP2W9Y)
   - [Slides](https://github.com/argotorg/solidity-website/blob/main/public/summit/2025/slides/From_Classic_to_Core_Solidity-Kamil_Sliwak.pdf)
 - Introducing Core Solidity - Rodrigo Ribeiro (Solidity | Argot Collective)
-  - [Recording](https://youtu.be/KKvkXFv-GXM)
+  - [Recording](https://youtu.be/02MsiQATNyg)
   - [Slides ](https://github.com/argotorg/solidity-website/blob/main/public/summit/2025/slides/Introducing_Core_Solidity-Rodrigo_Ribeiro.pdf)
 
 ### A Strong Focus on the Compiler Backend
