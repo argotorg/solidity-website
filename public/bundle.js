@@ -9694,7 +9694,7 @@
           resetSupported: anyMethodExists(solJson, 'solidity_reset'),
           compileJsonSupported: anyMethodExists(solJson, 'compileJSON'),
           compileJsonMultiSupported: anyMethodExists(solJson, 'compileJSONMulti'),
-          compileJsonCallbackSuppported: anyMethodExists(solJson, 'compileJSONCallback'),
+          compileJsonCallbackSupported: anyMethodExists(solJson, 'compileJSONCallback'),
           compileJsonStandardSupported: anyMethodExists(solJson, 'compileStandard', 'solidity_compile')
       };
   }
@@ -11626,7 +11626,7 @@
           features: {
               legacySingleInput: methodFlags.compileJsonStandardSupported,
               multipleInputs: methodFlags.compileJsonMultiSupported || methodFlags.compileJsonStandardSupported,
-              importCallback: methodFlags.compileJsonCallbackSuppported || methodFlags.compileJsonStandardSupported,
+              importCallback: methodFlags.compileJsonCallbackSupported || methodFlags.compileJsonStandardSupported,
               nativeStandardJSON: methodFlags.compileJsonStandardSupported
           },
           compile: compileStandardWrapper.bind(this, compileBindings),
