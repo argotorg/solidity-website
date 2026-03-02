@@ -221,7 +221,7 @@ If your project meets the conditions described in the "Which Contracts Are Affec
 In an affected contract, a single helper handles both persistent and transient clearing for a given type.
 For example, `storage_set_to_zero_t_uint256` delegates to `update_storage_value_t_uint256_to_t_uint256` (which uses `sstore`) for both:
 
-```yul
+```solidity
 function storage_set_to_zero_t_uint256(slot, offset) {
     let zero_0 := zero_value_for_split_t_uint256()
     update_storage_value_t_uint256_to_t_uint256(slot, offset, zero_0)
@@ -230,7 +230,7 @@ function storage_set_to_zero_t_uint256(slot, offset) {
 
 Recompiling with 0.8.34 produces a separate transient helper that correctly delegates to `tstore`:
 
-```yul
+```solidity
 function transient_storage_set_to_zero_t_uint256(slot, offset) {
     let zero_0 := zero_value_for_split_t_uint256()
     update_transient_storage_value_t_uint256_to_t_uint256(slot, offset, zero_0)
