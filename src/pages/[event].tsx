@@ -1,5 +1,6 @@
 import fs from 'fs'
 import matter from 'gray-matter'
+import rehypeSlug from 'rehype-slug'
 import gfm from 'remark-gfm'
 import { ParsedUrlQuery } from 'querystring'
 import ReactMarkdown from 'react-markdown'
@@ -145,6 +146,7 @@ const EventPage: React.FC<EventPost> = ({ frontmatter, content }) => {
           <ReactMarkdown
             components={EventMDStyles}
             remarkPlugins={[gfm]}
+            rehypePlugins={[rehypeSlug]}
             skipHtml
           >
             {content}

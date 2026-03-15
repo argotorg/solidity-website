@@ -1,10 +1,10 @@
-import { Heading } from '@chakra-ui/react'
+import { HeadingWithAnchor } from '@/components'
 import { MDStyles } from '@/styles'
 
 export const EventMDStyles = {
   ...MDStyles,
   h2: ({ children, id }: any) => (
-    <Heading
+    <HeadingWithAnchor
       as="h2"
       id={id}
       textStyle="h2"
@@ -14,10 +14,10 @@ export const EventMDStyles = {
       textAlign="center"
     >
       {children}
-    </Heading>
+    </HeadingWithAnchor>
   ),
   h3: ({ children, id }: any) => (
-    <Heading
+    <HeadingWithAnchor
       as="h3"
       id={id}
       textStyle="h3"
@@ -25,6 +25,6 @@ export const EventMDStyles = {
       my={{ base: 4, md: 6 }}
     >
       {children}
-    </Heading>
+    </HeadingWithAnchor>
   ),
 }

@@ -1,14 +1,5 @@
-import {
-  Box,
-  Divider,
-  Flex,
-  Heading,
-  Image,
-  Stack,
-  Table,
-  Text,
-} from '@chakra-ui/react'
-import { Code, Link } from '@/components'
+import { Box, Divider, Flex, Image, Stack, Table, Text } from '@chakra-ui/react'
+import { Code, HeadingWithAnchor, Link } from '@/components'
 // TODO: Debug tables
 
 export const MDStyles = {
@@ -23,7 +14,7 @@ export const MDStyles = {
     </Link>
   ),
   h2: ({ children, id }: any) => (
-    <Heading
+    <HeadingWithAnchor
       as="h2"
       id={id}
       textStyle="h2"
@@ -33,10 +24,10 @@ export const MDStyles = {
       mb={{ base: 4, md: 6 }}
     >
       {children}
-    </Heading>
+    </HeadingWithAnchor>
   ),
   h3: ({ children, id }: any) => (
-    <Heading
+    <HeadingWithAnchor
       as="h3"
       id={id}
       textStyle="h3"
@@ -46,10 +37,10 @@ export const MDStyles = {
       mb={{ base: 4, md: 6 }}
     >
       {children}
-    </Heading>
+    </HeadingWithAnchor>
   ),
   h4: ({ children, id }: any) => (
-    <Heading
+    <HeadingWithAnchor
       as="h4"
       id={id}
       textStyle="h4"
@@ -59,11 +50,12 @@ export const MDStyles = {
       mb={{ base: 4, md: 6 }}
     >
       {children}
-    </Heading>
+    </HeadingWithAnchor>
   ),
-  h5: ({ children }: any) => (
-    <Heading
+  h5: ({ children, id }: any) => (
+    <HeadingWithAnchor
       as="h5"
+      id={id}
       textStyle="h5-mono"
       fontSize="xl"
       color="text"
@@ -71,11 +63,12 @@ export const MDStyles = {
       mb={{ base: 2, md: 4 }}
     >
       {children}
-    </Heading>
+    </HeadingWithAnchor>
   ),
-  h6: ({ children }: any) => (
-    <Heading
+  h6: ({ children, id }: any) => (
+    <HeadingWithAnchor
       as="h6"
+      id={id}
       textStyle="h6-mono"
       fontSize="lg"
       color="text"
@@ -83,7 +76,7 @@ export const MDStyles = {
       mb={{ base: 2, md: 4 }}
     >
       {children}
-    </Heading>
+    </HeadingWithAnchor>
   ),
   pre: ({ children }: any) => (
     <Stack mb={5}>
