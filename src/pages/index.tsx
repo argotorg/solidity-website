@@ -6,7 +6,6 @@ import {
   ButtonLink,
   CompilerPlayground,
   ContributingCards,
-  EventCard,
   EventPreview,
   Hero,
   Link,
