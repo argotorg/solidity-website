@@ -7,7 +7,7 @@ author: Solidity Team
 category: Security Alerts
 ---
 
-On August 14, 2026, [shaheenfazim](https://github.com/shaheenfazim) reported a bug in the Solidity code generator through the Ethereum Foundation's bug bounty program.
+On August 14, 2026, [Shaheen Fazim](https://github.com/shaheenfazim) reported a bug in the Solidity code generator through the Ethereum Foundation's bug bounty program.
 When `delete` is applied to an element of a `bytes` array located in memory, the generated code writes 32 zero bytes starting at that element instead of clearing only the element.
 This also clears up to 31 of the bytes that follow it, either elsewhere in the same array or, when the deleted element sits near the end of the array, in whatever comes after it.
 The equivalent assignment `b[i] = 0` is not affected and clears exactly one byte.
@@ -202,4 +202,4 @@ When the element being cleared is a packed byte-array element, the compiler now 
 
 ## Acknowledgements
 
-We would like to thank [shaheenfazim](https://github.com/shaheenfazim) for reporting the bug through the Ethereum Foundation's bug bounty program and providing a reproducer.
+We would like to thank [Shaheen Fazim](https://github.com/shaheenfazim) for reporting the bug through the Ethereum Foundation's bug bounty program and providing a reproducer.
