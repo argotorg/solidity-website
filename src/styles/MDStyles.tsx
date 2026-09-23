@@ -1,7 +1,6 @@
 import {
   Box,
   Divider,
-  Flex,
   Image,
   Stack,
   Table,
