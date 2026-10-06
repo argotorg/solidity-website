@@ -91,6 +91,7 @@ The visible differences are that types follow names (`phase: Phase`, `amount: ui
 An enum like `Phase` is what we mean by an algebraic data type.
 The imports also bring in the library code behind the contract's dispatch and the storage encoding of `Phase`.
 `match` takes `Phase` apart, and a `match` that leaves a case unhandled and has no `default` arm is rejected by the compiler.
+
 The example shows a rough edge as well: there is no `revert` statement, so the `default` arms use `require(false, ...)`, and `release` has a `return` after it that is never reached.
 The contract only tracks state, and value transfer is left out to keep it short.
 You can open it in the [playground](https://playground.solcore.soliditylang.org/#/examples/pattern-matching), change it and call it.
@@ -135,13 +136,13 @@ They are also not exhaustive: the [syntax chapter](https://argotorg.github.io/so
 
 [//]: # "TODO: re-check these lists and the feature list above against the main branch of the solcore repository on the day of publication."
 
-In progress, with open pull requests:
+#### In progress, with open pull requests
 
 - General memory arrays and array slices. Memory arrays exist only in a limited form today.
 - Signed integers and integer widths other than 256 bits. Today `uint256` is the only integer type besides `word`, the raw 256-bit EVM word.
 - Interfaces and calls to other contracts, starting with basic types. Today only low-level calls are available.
 
-Not there yet:
+#### Not there yet
 
 - Checked arithmetic. Integer operations wrap today, and making them checked by default is still to be done.
 - Short-circuit evaluation of `&&` and `||`. Both operands are evaluated today.
@@ -156,19 +157,21 @@ Not there yet:
 
 Gas cost and code size have not been a focus of the prototype, and we have not compared them with Classic Solidity yet.
 
-Some differences are deliberate.
+#### Deliberately different
+
 Core Solidity has no inheritance, so there is no `virtual` and there are no abstract contracts.
 There are no Classic-style libraries either.
 Composition through traits and modules takes their place, and the [composition](https://playground.solcore.soliditylang.org/#/examples/composition) and [extensions](https://playground.solcore.soliditylang.org/#/examples/extensions) examples show what that looks like today.
-We will cover composition without inheritance in a dedicated post within the next couple of weeks.
+We will publish a deep dive into composition without inheritance within the next couple of weeks.
 
-Documentation is incomplete.
+#### Documentation
+
 The work-in-progress [reference documentation](https://argotorg.github.io/solcore/) is written for compiler and tool developers, and it documents the syntax, the type system and the module system.
 Most of the chapters for contract developers are not written yet.
 
 ## What the community told us
 
-Since March 2026 we have held 17 interviews about Core Solidity, most of them one-to-one and some with several guests.
+Since March 2026 we have held 17 qualitative interviews about Core Solidity, most of them one-to-one and some with several guests.
 We spoke with protocol developers, security researchers and auditors, educators, maintainers of libraries and developer tools, a wallet team, and people who research and design programming languages.
 In most of the calls they read Core Solidity code in the playground for the first time and talked us through what they saw.
 The earliest interviews took place before the playground existed, so the reactions to code below come from the later ones.
@@ -290,14 +293,14 @@ This is what has changed on our side so far:
 
 Three things stood out beyond the individual requests.
 
-The message that Core Solidity is a new frontend on the existing backend has not landed.
+**The frontend message:** Many people we spoke with did not know that Core Solidity is a new frontend on the existing backend.
 We will communicate this more clearly going forward.
 
-Documentation is one of the first things people ask for once they have seen real code.
+**Documentation:** It is one of the first things people ask for once they have seen real code.
 The playground examples are enough for a first read, and after that people want something to work from.
 We will prioritize bringing the documentation up to date in the upcoming development cycles.
 
-Compilation time matters to users of Classic Solidity today, and it was among the problems raised most often.
+**Compilation time:** It matters to users of Classic Solidity today, and it was among the problems raised most often.
 Once the SSA CFG code generator is out of its experimental stage and fixes stack-too-deep errors in production, improving compilation time becomes the priority, and the SSA CFG work is a good foundation for it.
 
 ## What comes next
@@ -306,7 +309,7 @@ We are scoping a first release of the prototype that people can install and try.
 Its purpose is to get additional feedback early.
 We do not have a date for it yet, and it is one of our priorities.
 
-The post on composition without inheritance comes next, and we are also working out the community process for the standard library.
+A deep dive into composition without inheritance comes next, and we are also working out the community process for the standard library.
 
 In the meantime you can try the [playground](https://playground.solcore.soliditylang.org/), follow the work in the [solcore repository](https://github.com/argotorg/solcore) and join our [weekly team calls](https://docs.soliditylang.org/en/latest/contributing.html#team-calls), which are open to everyone.
 If you want to go further than the playground, the repository has [build instructions](https://github.com/argotorg/solcore#development) for the prototype compiler.
