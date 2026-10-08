@@ -122,10 +122,8 @@ Structs, for example, are in the repository and, at the time of writing, not yet
 
 [//]: # "TODO: get the team's decision on whether to state which code generation backend the playground uses, and adjust the playground paragraph and the backend sentences in the intro to match."
 
-We are also formalizing the semantics of Core Solidity in the Lean 4 proof assistant.
+We are also formalizing the semantics of Core Solidity in the Lean 4 proof assistant, in the [solcore-lean repository](https://github.com/argotorg/solcore-lean).
 This is work in progress, and we will share more once there are results to report.
-
-[//]: # "TODO: link the Lean repository here once it is public, and confirm its name (expected: solcore-lean)."
 
 ## What is still missing
 
@@ -171,7 +169,7 @@ Most of the chapters for contract developers are not written yet.
 
 ## What the community told us
 
-Since March 2026 we have held 17 qualitative interviews about Core Solidity, most of them one-to-one and some with several guests.
+Since March 2026 we have held 18 qualitative interviews about Core Solidity, most of them one-to-one and some with several guests.
 We spoke with protocol developers, security researchers and auditors, educators, maintainers of libraries and developer tools, a wallet team, and people who research and design programming languages.
 In most of the calls they read Core Solidity code in the playground for the first time and talked us through what they saw.
 The earliest interviews took place before the playground existed, so the reactions to code below come from the later ones.
