@@ -17,7 +17,7 @@ It folds every shared function, and every base's storage, into a single whole-pr
 The rules that make this well-defined, C3 linearization, produce results that regularly surprise even experienced Solidity developers, and that auditors have to reconstruct by hand.
 
 Core Solidity takes a different route.
-As [announced in our deep dive](https://soliditylang.org/blog/2025/11/14/core-solidity-deep-dive/), we are removing inheritance from the language entirely, and code reuse is expressed instead through traits, generics, and modules that own their state.
+As [announced in our deep dive](https://soliditylang.org/blog/2025/11/14/core-solidity-deep-dive/), we are removing inheritance from the language entirely, and code reuse is expressed instead through traits, generics, values, and modules that own their state.
 This post walks through what that costs and what it buys, using two small but complete examples.
 The first is a family of vaults that compose their _behavior_ along two independent axes.
 The second is an ERC20 token assembled from independent `Ownable`, `Pausable`, and supply-cap modules that each carry their own _state_, the archetypal inheritance stack, built without a single base contract between them.
@@ -154,11 +154,12 @@ That is tedious, error-prone work that scales with the number of contracts and b
 
 Core Solidity keeps the goal, sharing behavior across contracts, and drops the mechanism that made it fragile.
 There is no `virtual`, no `override`, no `super`, and no linearization, because there is no inheritance.
-Reuse is expressed with three ingredients that are already in the language:
+Reuse is expressed with four ingredients that are already in the language:
 
 - **Traits** (type classes) declare an interface that many types can implement.
 - **Generics** let a function be written once and reused for every type that satisfies a trait.
 - **Values** carry the choices, and are composed at the use site.
+- **Modules** own their state in their own storage namespace.
 
 A quick note on syntax: like everything in the prototype, the surface syntax below is provisional and could change before release.
 The code shown here is taken verbatim from a [runnable example in the playground](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition); it typechecks and produces executable code today.
