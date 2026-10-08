@@ -521,7 +521,7 @@ There are no base constructors and no overrides, so no constructor can call into
 Each vault's constructor initializes only its own storage, and `VaultGasless` sets its `flatFee` before anything reads it.
 The `Token` constructor calls `initOwner` and then `setCap` in the order written, and each one only reads the slot it sets.
 
-## The Trade-off
+## Conclusion
 
 Removing inheritance has a cost.
 With inheritance, a single `is` list sets up the storage layout, the hook order, and the order of initializers for you.
@@ -532,10 +532,9 @@ There is a bit more code to write, and the compiler does not lay out storage acr
 In return, every connection is _local and visible_.
 Inheritance ties together code reuse, storage layout, and dispatch, and controls all three with the same `is` clause.
 Core Solidity separates them.
-Behavior is a trait implemented once per type, and composition is a value applied in the order you write it.
-State is either a field of the contract, when it is local, or a module with a namespaced slot, when it is shared.
-No other contract can change the storage layout.
-For contracts where an unexpected dispatch order or a shifted storage slot can lose funds, being able to reason about each file on its own is worth the extra code.
+Behavior is a trait implemented once per type, composition is a value applied in the order you write it, and shared state lives in modules with namespaced slots.
+As a result, both dispatch and storage layout can be understood from the file you are reading.
+For contracts where an unexpected dispatch order or a shifted storage slot can lose funds, that is worth the extra code.
 
 Core Solidity is still a prototype.
 The syntax is provisional and the standard library is still growing.
@@ -543,17 +542,6 @@ The examples also take shortcuts that production code should not.
 The vaults credit balances without actually receiving tokens, and the signed digest does not include a nonce or chain ID.
 The token does not implement approvals.
 The composition mechanism itself, using traits, generics, values, and modules that own their state, is the one we plan to ship.
-
-## Conclusion
-
-Inheritance in Classic Solidity ties code reuse to a dispatch order over the whole program, and C3 linearization is what makes that order well-defined.
-The rules are consistent, but their consequences depend on the final deployed contract and cannot be seen in any single file.
-`super` may not call your parent, it may call an unrelated contract, and base constructors may call overrides before their state is initialized.
-
-Core Solidity separates these concerns.
-Shared behavior is a trait implemented once per type, shared logic is a generic function, composition is a value, and shared state lives in modules with namespaced slots.
-Dispatch is resolved from types at compile time and storage is separated by name, so both can be understood from the file you are reading.
-The problems that make diamonds hard to audit cannot be expressed.
 
 The full examples are available in the playground: the [fee-policy vaults](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition) and the [stateful token extensions](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/extensions).
 The prototype is available at [github.com/argotorg/solcore](https://github.com/argotorg/solcore).
