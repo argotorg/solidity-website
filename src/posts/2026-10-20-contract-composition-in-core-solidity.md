@@ -32,7 +32,7 @@ That rule is **C3 linearization**.
 It flattens the inheritance graph into a single ordered list, computed over the most derived contract, in which each contract appears exactly once, precedes all of its own bases, and preserves the relative order of every `is` clause.
 Everything about `virtual`, `override`, and `super` follows from this one list: `super.f()` means "the next contract after me _in the linearization of the contract being deployed_ that defines `f`."
 
-Read that definition again, because two consequences of it are the source of a whole category of bugs.
+Together with virtual dispatch, this rule leads to three kinds of surprising behavior.
 
 ## The C3 Linearization Trap
 
@@ -147,7 +147,7 @@ The contract permanently disagrees with itself about a value it computed from it
 None of these examples is exotic.
 No contract mentions its siblings, the functions are `view`, and they touch only ordinary state.
 The behavior is a property of _the whole program_, not of any file you can read in isolation.
-This is precisely the kind of finding that makes enum- and inheritance-heavy contracts expensive to audit: reviewers manually trace per-deployment linearizations, checking that no `super` chain routes into a stranger and that no constructor reads through a live override.
+This is precisely the kind of finding that makes inheritance-heavy contracts expensive to audit: reviewers manually trace per-deployment linearizations, checking that no `super` chain routes into a stranger and that no constructor reads through a live override.
 That is tedious, error-prone work that scales with the number of contracts and bases in a codebase.
 
 ## Composition Without Inheritance in Core Solidity
@@ -510,7 +510,7 @@ The three C3 surprises have stateful analogues, and each one is again absent:
 The `Token` contract declares no storage variables at all, yet it composes four independently-authored stateful features.
 Nothing is inherited: the state is contributed by the modules and kept disjoint by construction.
 
-## The Trade-off, Stated Honestly
+## The Trade-off
 
 Removing inheritance is not free.
 What you give up is _implicit_ wiring: inheritance assembles the storage layout, the hook order, and the initializer sequence for you out of a single `is` list.
