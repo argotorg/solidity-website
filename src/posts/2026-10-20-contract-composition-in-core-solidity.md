@@ -391,17 +391,21 @@ Each vault's constructor initializes only its own storage.
 
 ## Composing State, Not Just Behavior
 
-The vaults compose behavior, but the pieces they compose, a context and a fee policy, are stateless values handed to `settle`.
-The harder question is what happens when the reusable pieces carry _state_ of their own.
-That is exactly what the most common inheritance stack does: an ERC20 token that mixes in `Ownable`, `Pausable`, and a supply cap is written `contract Token is ERC20, Ownable, Pausable, Capped`, and each base contributes storage (`_owner`, a paused flag, `_balances`, a cap) and hooks a `_beforeTokenTransfer` that the chain runs through `super`.
+The vaults compose behavior, but the context and fee policy they compose are stateless values passed to `settle`.
+The harder case is when the reusable pieces have _state_ of their own.
+A typical example is an ERC20 token with an owner, pausing, and a supply cap, written as `contract Token is ERC20, Ownable, Pausable, Capped`.
+Each base contributes storage, such as `_owner`, a paused flag, `_balances`, or a cap.
+Bases can also override a `_beforeTokenTransfer` hook, and the overrides are chained through `super`.
 
-This is where inheritance's coupling bites hardest.
-The storage of all four bases shares one linear layout decided by the linearization; the hook order is decided by the same list; and each base's initializer must run in that order or a later read sees zero.
-That shared layout is fragile enough under mixin reordering and upgrades that OpenZeppelin adopted [ERC-7201 namespaced storage](https://eips.ethereum.org/EIPS/eip-7201) to escape it.
+This is where the coupling in inheritance matters most.
+The linearization decides the storage layout of all four bases, as well as the order of the hooks.
+Each base's initializer also has to run in that order, or a later read sees zero.
+The shared layout is fragile enough under reordering and upgrades that OpenZeppelin adopted [ERC-7201 namespaced storage](https://eips.ethereum.org/EIPS/eip-7201) to avoid it.
 
-Core Solidity composes the same token from self-contained modules.
-Each feature module owns its own storage at an ERC-7201 namespaced slot and, where it needs to run on every transfer, ships a `TransferHook` implementation.
-Here is the entire ownership module: one slot, and the operations on it.
+Core Solidity builds the same token from self-contained modules.
+Each module keeps its storage in an ERC-7201 namespaced slot.
+Modules that need to run on every transfer also provide a `TransferHook` implementation.
+Here is the complete ownership module, a single slot and the functions that use it:
 
 ```js
 // ownable.sol -- owns one ERC-7201 namespaced slot; nothing is inherited.
@@ -420,11 +424,12 @@ function requireOwner() {
 }
 ```
 
-There is no `Token` storage variable for the owner: the slot belongs to the `ownable` module, and its address is derived from the string `"token.ownable"`.
-The `pausable`, `capped`, and `erc20core` (ledger) modules own their own namespaced slots the same way.
-Because each namespace is distinct, the slots cannot collide, and there is no shared layout that a change in composition order could shift.
+The `Token` contract has no storage variable for the owner.
+The slot belongs to the `ownable` module, and its address is derived from the string `"token.ownable"`.
+The `pausable`, `capped`, and `erc20core` (ledger) modules have their own namespaced slots in the same way.
+Since each namespace is different, the slots cannot collide, and changing the order of composition cannot move them.
 
-Behavior that must run on every balance change is a hook trait, composed as a value exactly like the fee policies were:
+Code that must run on every balance change is defined by a hook trait, and hooks are composed as values just like the fee policies:
 
 ```js
 // hooks.sol
@@ -456,8 +461,8 @@ impl<f, g> TransferHook<Stacked<f, g>> where f: TransferHook, g: TransferHook {
 }
 ```
 
-Each stateful feature provides its own hook.
-Pausing refuses any transfer while the flag is set; the cap refuses a mint that would push supply over the limit:
+Each module with state provides its own hook.
+The pausing hook rejects every transfer while the contract is paused, and the cap hook rejects any mint that would push the supply over the limit:
 
 ```js
 // pausable.sol
@@ -472,7 +477,8 @@ impl TransferHook<Pausable> {
 }
 ```
 
-The ledger module owns the balances and total supply, and exposes a single `apply` function that runs a before-chain and an after-chain around every effect, so no hook can be skipped:
+The ledger module owns the balances and the total supply.
+It exposes a single `apply` function, which runs one hook chain before and one after every balance change, so no hook can be skipped:
 
 ```js
 // erc20core.sol -- the only exported way to move balances.
@@ -485,8 +491,9 @@ function apply<b, a>(before: b, after: a, from: Option<address>, to: Option<addr
 }
 ```
 
-The token contract is then pure wiring.
-It holds no storage of its own: it initializes each module in its constructor and declares the hook chain once, at the single choke point every balance change flows through.
+The token contract only connects the modules.
+It has no storage of its own.
+Its constructor initializes each module, and the hook chain is declared once, in the one function that every balance change goes through:
 
 ```js
 contract Token {
@@ -513,41 +520,50 @@ contract Token {
 }
 ```
 
-The three C3 surprises have stateful analogues, and each one is again absent:
+Each of the three C3 problems has a stateful equivalent, and none of them apply here:
 
-- **Storage layout is namespaced, not linearized.** Each module owns a slot derived from its own name, so the four features' storage cannot collide and no reordering can move it. What OpenZeppelin reaches for ERC-7201 to achieve on top of inheritance is simply how a stateful module holds its state here.
-- **The hook chain is a value, not a `super` chain.** `Stacked(Pausable, Capped)` runs pausing and then the cap check because that is the expression written at the choke point, not because a linearization put one before the other.
-- **Initialization is explicit and ordered.** The constructor calls `initOwner` and then `setCap`, in the order written, and each reads only the slot it just set. No base initializer runs before the state it depends on exists.
+- **Storage layout is namespaced, not linearized.** Each module's slot is derived from its own name, so the storage of the four modules cannot collide and reordering cannot move it. OpenZeppelin adds ERC-7201 on top of inheritance to get this, while here it is simply how modules store their state.
+- **The hook chain is a value, not a `super` chain.** `Stacked(Pausable, Capped)` checks pausing and then the cap because that is the order written in `update`, not because of the linearization.
+- **Initialization is explicit and ordered.** The constructor calls `initOwner` and then `setCap` in the order written, and each one only reads the slot it sets. No initializer runs before the state it depends on exists.
 
-The `Token` contract declares no storage variables at all, yet it composes four independently-authored stateful features.
-Nothing is inherited: the state is contributed by the modules and kept disjoint by construction.
+The `Token` contract declares no storage variables, but still combines four independent modules with state.
+Nothing is inherited.
+The state belongs to the modules, and namespacing keeps it separate.
 
 ## The Trade-off
 
-Removing inheritance is not free.
-What you give up is _implicit_ wiring: inheritance assembles the storage layout, the hook order, and the initializer sequence for you out of a single `is` list.
-In Core Solidity you write those connections by hand.
-The vaults repeat a `balances` line when they want contract-local state; the token initializes each module in its constructor and names its hook chain explicitly in `update`.
-There is a little more to type, and no compiler magic laying out storage across a hierarchy for you.
+Removing inheritance has a cost.
+With inheritance, a single `is` list sets up the storage layout, the hook order, and the order of initializers for you.
+In Core Solidity you write these connections yourself.
+Each vault declares its own `balances` mapping, and the token initializes each module in its constructor and lists its hook chain in `update`.
+There is a bit more code to write, and the compiler does not lay out storage across a hierarchy for you.
 
-What you get back is that every one of those connections is _local and visible_.
-Inheritance bundled three separate things, code reuse, storage layout, and dispatch, and made all three follow the same clause.
-Core Solidity unbundles them: behavior is a trait implemented once per type; composition is a value applied in the order you wrote; and state is either a contract-scoped field, when you want locality, or a module that owns a namespaced slot, when you want to share it, never an inherited layout whose order another contract decides.
-For software where a surprising dispatch order or a shifted storage slot can silently misroute funds, and where audits are measured in five and six figures, moving that reasoning out of the whole-program linearization and into the file you are reading is a trade worth making.
+In return, every connection is _local and visible_.
+Inheritance ties together code reuse, storage layout, and dispatch, and controls all three with the same `is` clause.
+Core Solidity separates them.
+Behavior is a trait implemented once per type, and composition is a value applied in the order you write it.
+State is either a field of the contract, when it is local, or a module with a namespaced slot, when it is shared.
+No other contract can change the storage layout.
+For contracts where an unexpected dispatch order or a shifted storage slot can lose funds, being able to reason about each file on its own is worth the extra code.
 
-As always, this is a prototype.
-The syntax is provisional, the standard library is still growing, and the examples take shortcuts production code would not: the vaults credit balances without taking token custody or binding a nonce and chain id into the signed digest, and the token omits approvals.
-The composition mechanism itself, however, is exactly what ships: traits, generics, values, and modules that own their state, with no inheritance behind them.
+Core Solidity is still a prototype.
+The syntax is provisional and the standard library is still growing.
+The examples also take shortcuts that production code should not.
+The vaults credit balances without actually receiving tokens, and the signed digest does not include a nonce or chain ID.
+The token does not implement approvals.
+The composition mechanism itself, using traits, generics, values, and modules that own their state, is the one we plan to ship.
 
 ## Conclusion
 
-Classic Solidity's inheritance conflated code reuse with a whole-program dispatch order, and C3 linearization is the price of making that order well-defined.
-The rules are internally consistent, but their consequences, `super` that is not your parent, `super` that lands on a stranger, constructors that read through live overrides, are decided by the final deployed contract and are invisible in any single file.
+Inheritance in Classic Solidity ties code reuse to a dispatch order over the whole program, and C3 linearization is what makes that order well-defined.
+The rules are consistent, but their consequences depend on the final deployed contract and cannot be seen in any single file.
+`super` may not call your parent, it may call an unrelated contract, and base constructors may call overrides before their state is initialized.
 
-Core Solidity separates the concerns that inheritance tangled together.
-Shared behavior is a trait implemented once per type; a generic engine is written once and reused; composition is a value applied in the order you wrote; and shared state is a module that owns a namespaced slot rather than a layout inherited from a base.
-Dispatch is resolved from static types at the call site, storage is kept disjoint by name, and both are decided in the file you are reading, so the surprises that make diamonds hard to audit, for behavior and for state alike, are not just unlikely, they are unrepresentable.
-The cost is a little explicit wiring; the benefit is that composition finally means what it says, right where you read it.
+Core Solidity separates these concerns.
+Shared behavior is a trait implemented once per type, shared logic is a generic function, composition is a value, and shared state lives in modules with namespaced slots.
+Dispatch is resolved from types at compile time and storage is separated by name, so both can be understood from the file you are reading.
+The problems that make diamonds hard to audit cannot be expressed.
 
-The full examples are available in the playground, both the [fee-policy vaults](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition) and the [stateful token extensions](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/extensions), and the prototype lives at [github.com/argotorg/solcore](https://github.com/argotorg/solcore).
+The full examples are available in the playground: the [fee-policy vaults](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition) and the [stateful token extensions](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/extensions).
+The prototype is available at [github.com/argotorg/solcore](https://github.com/argotorg/solcore).
 We are looking forward to your feedback.
