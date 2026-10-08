@@ -241,23 +241,6 @@ impl FeePolicy<NoFee> {
     }
 }
 
-enum FlatFee {
-    FlatFee(uint256)
-}
-
-impl FeePolicy<FlatFee> {
-    function afterFee(policy: FlatFee, amount: uint256) returns (uint256) {
-        match (policy) {
-            case FlatFee(fee) {
-                if (amount > fee) {
-                    return amount - fee;
-                }
-                return uint256(0);
-            }
-        }
-    }
-}
-
 enum BasisFee {
     BasisFee(uint256)  // a percentage in basis points
 }
@@ -272,6 +255,8 @@ impl FeePolicy<BasisFee> {
     }
 }
 ```
+
+A third policy, `FlatFee`, subtracts a fixed fee and is implemented in the same way.
 
 Two things are worth noting.
 First, each `impl` block is the _only_ place `afterFee` is defined for its type.
@@ -328,22 +313,10 @@ The implementations that run are chosen at compile time, based on the types of `
 ### The leaves
 
 Each deployable contract picks an option on each axis and calls `settle`.
+For example, `VaultPremium` takes direct deposits and charges the stacked fee from above.
 Note that there is no `is` clause, no `override` list, and no `super`:
 
 ```js
-contract VaultDirect {
-    balances : mapping(address => uint256);
-
-    function deposit(amount: uint256) public {
-        match (settle(Direct, NoFee, amount)) {
-            case (who, credited) {
-                balances[who] = balances[who] + credited;
-            }
-        }
-    }
-    // ... balanceOf omitted
-}
-
 contract VaultPremium {
     balances : mapping(address => uint256);
 
@@ -359,6 +332,7 @@ contract VaultPremium {
 }
 ```
 
+A second vault, `VaultDirect`, does the same with `NoFee`.
 A third vault, `VaultGasless`, uses `Signed` on the first axis and a `FlatFee` set in the constructor on the second.
 Anyone can relay a deposit, and the account to credit is recovered from a signature.
 It has its own constructor and storage, and uses the same `settle` function.
@@ -407,7 +381,7 @@ The slot belongs to the `ownable` module, and its address is derived from the st
 The `pausable`, `capped`, and `erc20core` (ledger) modules have their own namespaced slots in the same way.
 Since each namespace is different, the slots cannot collide, and changing the order of composition cannot move them.
 
-Code that must run on every balance change is defined by a hook trait, and hooks are composed as values just like the fee policies:
+Code that must run on every balance change is defined by a hook trait:
 
 ```js
 // hooks.sol
@@ -422,22 +396,10 @@ enum NoHook {
 impl TransferHook<NoHook> {
     function on(hook: NoHook, from: Option<address>, to: Option<address>, amount: uint256) {}
 }
-
-enum Stacked<f, g> {
-    Stacked(f, g)
-}
-
-impl<f, g> TransferHook<Stacked<f, g>> where f: TransferHook, g: TransferHook {
-    function on(hook: Stacked<f, g>, from: Option<address>, to: Option<address>, amount: uint256) {
-        match (hook) {
-            case Stacked(first, second) {
-                TransferHook.on(first, from, to, amount);
-                TransferHook.on(second, from, to, amount);
-            }
-        }
-    }
-}
 ```
+
+Hooks are combined with a `Stacked` type, just like the fee policies.
+`Stacked(first, second)` runs `first` and then `second`.
 
 Each module with state provides its own hook.
 The pausing hook rejects every transfer while the contract is paused, and the cap hook rejects any mint that would push the supply over the limit:
