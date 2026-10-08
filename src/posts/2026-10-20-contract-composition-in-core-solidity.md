@@ -42,22 +42,22 @@ Consider a textbook diamond:
 ```solidity
 contract A {
     function f() public virtual returns (uint) {
-      return 1;
+        return 1;
     }
 }
 contract B is A {
     function f() public virtual override returns (uint) {
-      return super.f()*10 + 2;
+        return super.f()*10 + 2;
     }
 }
 contract C is A {
     function f() public virtual override returns (uint) {
-      return super.f()*10 + 3;
+        return super.f()*10 + 3;
     }
 }
 contract D is B, C {
     function f() public override(B, C) returns (uint) {
-      return super.f()*10 + 4;
+        return super.f()*10 + 4;
     }
 }
 ```
@@ -83,27 +83,27 @@ Because the target is chosen from the deployed contract's list, it can be a cont
 
 ```solidity
 contract A {
-  function f() public virtual returns (uint) {
-    return 1;
-  }
+    function f() public virtual returns (uint) {
+        return 1;
+    }
 }
 
 contract X {
-  function f() public virtual returns (uint) {
-    return 100;
-  }
+    function f() public virtual returns (uint) {
+        return 100;
+    }
 }
 
 contract B is A {
-  function f() public virtual override returns (uint) {
-    return super.f();
-  }
+    function f() public virtual override returns (uint) {
+        return super.f();
+    }
 }
 
 contract D is A, X, B {
-  function f() public override(A, X, B) returns (uint) {
-    return super.f();
-  }
+    function f() public override(A, X, B) returns (uint) {
+        return super.f();
+    }
 }
 ```
 
@@ -121,21 +121,21 @@ It reaches the most derived override, which runs before the constructors that gi
 contract A {
     uint public captured;
     constructor() {
-      captured = f();
+        captured = f();
     }
 
     function f() public view virtual returns (uint) {
-      return 1;
+        return 1;
     }
 }
 contract B is A {
     uint public rate;
     constructor() {
-      rate = 100;
+        rate = 100;
     }
 
     function f() public view virtual override returns (uint) {
-      return rate;
+        return rate;
     }
 }
 ```
@@ -184,7 +184,7 @@ trait TxnContext<c> {
 
 // A direct call: the transaction caller acts for themselves.
 enum Direct {
-  Direct
+    Direct
 }
 
 impl TxnContext<Direct> {
@@ -196,7 +196,7 @@ impl TxnContext<Direct> {
 // A relayed call: the acting address is recovered from a signature over
 // the digest the relayer hands in alongside it.
 enum Signed {
-  Signed(bytes32, uint256, bytes32, bytes32)
+    Signed(bytes32, uint256, bytes32, bytes32)
 }
 
 impl TxnContext<Signed> {
@@ -222,7 +222,7 @@ trait FeePolicy<f> {
 }
 
 enum NoFee {
-  NoFee
+    NoFee
 }
 
 impl FeePolicy<NoFee> {
@@ -232,7 +232,7 @@ impl FeePolicy<NoFee> {
 }
 
 enum FlatFee {
-  FlatFee(uint256)
+    FlatFee(uint256)
 }
 
 impl FeePolicy<FlatFee> {
@@ -240,7 +240,7 @@ impl FeePolicy<FlatFee> {
         match (policy) {
             case FlatFee(fee) {
                 if (amount > fee) {
-                  return amount - fee;
+                    return amount - fee;
                 }
                 return uint256(0);
             }
@@ -249,8 +249,8 @@ impl FeePolicy<FlatFee> {
 }
 
 enum BasisFee {
-  BasisFee(uint256)
-}  // a percentage in basis points
+    BasisFee(uint256)  // a percentage in basis points
+}
 
 impl FeePolicy<BasisFee> {
     function afterFee(policy: BasisFee, amount: uint256) returns (uint256) {
@@ -280,7 +280,7 @@ In Core Solidity, composition is just another type, and the order is the express
 // expression written at the use site, not the C3 linearization of an
 // inheritance list.
 enum Stacked<f, g> {
-  Stacked(f, g)
+    Stacked(f, g)
 }
 
 impl<f, g> FeePolicy<Stacked<f, g>> where f: FeePolicy, g: FeePolicy {
@@ -327,7 +327,7 @@ contract VaultDirect {
     function deposit(amount: uint256) public {
         match (settle(Direct, NoFee, amount)) {
             case (who, credited) {
-              balances[who] = balances[who] + credited;
+                balances[who] = balances[who] + credited;
             }
         }
     }
@@ -341,7 +341,7 @@ contract VaultPremium {
         let policy = Stacked(BasisFee(uint256(30)), FlatFee(uint256(2)));
         match (settle(Direct, policy, amount)) {
             case (who, credited) {
-              balances[who] = balances[who] + credited;
+                balances[who] = balances[who] + credited;
             }
         }
     }
@@ -421,15 +421,15 @@ trait TransferHook<h> {
 }
 
 enum NoHook {
-  NoHook
-}            // identity chain; monomorphization erases it
+    NoHook  // identity chain; monomorphization erases it
+}
 
 impl TransferHook<NoHook> {
     function on(hook: NoHook, from: Option<address>, to: Option<address>, amount: uint256) {}
 }
 
 enum Stacked<f, g> {
-  Stacked(f, g)
+    Stacked(f, g)
 }
 
 impl<f, g> TransferHook<Stacked<f, g>> where f: TransferHook, g: TransferHook {
@@ -450,7 +450,7 @@ Pausing refuses any transfer while the flag is set; the cap refuses a mint that 
 ```js
 // pausable.sol
 enum Pausable {
-  Pausable
+    Pausable
 }
 
 impl TransferHook<Pausable> {
@@ -494,7 +494,8 @@ contract Token {
     }
 
     function pause() public {
-        requireOwner(); setPaused(true);
+        requireOwner();
+        setPaused(true);
     }
     // ... transfer, burn, balanceOf, totalSupply, transferOwnership ...
 }
