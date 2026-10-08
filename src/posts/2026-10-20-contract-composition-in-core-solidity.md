@@ -160,8 +160,8 @@ This work is tedious and error-prone, and it grows with the number of contracts 
 
 ## Composition Without Inheritance in Core Solidity
 
-Core Solidity keeps the goal, sharing behavior across contracts, and drops the mechanism that made it fragile.
-There is no `virtual`, no `override`, no `super`, and no linearization, because there is no inheritance.
+Core Solidity still lets you share behavior across contracts, but without inheritance.
+There is no `virtual`, no `override`, no `super`, and no linearization.
 Reuse is expressed with four ingredients that are already in the language:
 
 - **Traits** (type classes) declare an interface that many types can implement.
@@ -169,8 +169,8 @@ Reuse is expressed with four ingredients that are already in the language:
 - **Values** carry the choices, and are composed at the use site.
 - **Modules** own their state in their own storage namespace.
 
-A quick note on syntax: like everything in the prototype, the surface syntax below is provisional and could change before release.
-The code shown here is taken verbatim from a [runnable example in the playground](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition); it typechecks and produces executable code today.
+Like everything in the prototype, the syntax below is provisional and may change before release.
+The code is taken from a [runnable example in the playground](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition), which type-checks and compiles to executable code today.
 
 ### The example: vaults that vary along two axes
 
@@ -179,8 +179,9 @@ We want a family of deposit vaults that differ along two _independent_ axes:
 1. **Where does the acting address come from?** A direct call, where the transaction caller acts for themselves, or a relayed call, where the acting address is recovered from a signature.
 2. **How much of a deposit is credited?** No fee, a flat fee, a percentage fee, or some composition of those.
 
-In Classic Solidity, two independent axes of variation is exactly the situation that pushes you toward a base `VaultBase` with a virtual `originator()` hook, a virtual `afterFee()` hook, and a set of mixin contracts, one per choice, combined by inheritance in each leaf.
-Two axes with a handful of options each, and you are back in diamond territory with `override(...)` lists.
+In Classic Solidity, you would typically write a base contract `VaultBase` with two virtual hooks, `originator()` and `afterFee()`.
+Each option would be a mixin contract that overrides one of the hooks, and each vault would inherit the mixins it needs.
+With a few options on each axis, you quickly end up with diamonds and `override(...)` lists.
 
 Here is the same design with traits.
 The first axis is a trait with one method, and each option is a small type with its own `impl`:
@@ -272,17 +273,17 @@ impl FeePolicy<BasisFee> {
 }
 ```
 
-Two things are worth pausing on.
+Two things are worth noting.
 First, each `impl` block is the _only_ place `afterFee` is defined for its type.
-A trait has one implementation per type, so there is nothing to disambiguate: no `override(...)` list, because no two implementations ever compete for the same call.
-Second, the fee behavior of `BasisFee` is a property of `BasisFee` alone.
-It does not depend on what else is in the program, and it cannot be changed by a contract deployed elsewhere.
+A type can implement a trait only once, so there is no need for an `override(...)` list to choose between implementations.
+Second, the behavior of `BasisFee` depends only on its own `impl`.
+Nothing else in the program can change it.
 
 ### Composition is a value, not an inheritance list
 
-The interesting case is composing fee policies, layering a percentage fee and then a flat fee, say.
-Under inheritance this is where the linearization order would silently decide who runs first.
-In Core Solidity, composition is just another type, and the order is the expression you write:
+It gets more interesting when fee policies are combined, for example a percentage fee followed by a flat fee.
+With inheritance, the linearization would decide which one runs first.
+In Core Solidity, the combination is just another type, and the order is the order in which you write it:
 
 ```js
 // Policies compose as values, applied left to right. The order is the
@@ -304,11 +305,11 @@ impl<f, g> FeePolicy<Stacked<f, g>> where f: FeePolicy, g: FeePolicy {
 ```
 
 `Stacked<f, g>` is a `FeePolicy` whenever both `f` and `g` are, and it applies `first` and then `second`.
-`Stacked(BasisFee(30), FlatFee(2))` reads exactly as it runs: basis fee, then flat fee.
-Reorder the arguments and you reorder the computation.
-There is no third contract whose deployment could change the answer.
+`Stacked(BasisFee(30), FlatFee(2))` applies the basis fee first and then the flat fee.
+Swapping the arguments swaps the order.
+No other contract can change this.
 
-Finally, the engine, the code that is genuinely shared, is a single generic function written once for every context and every fee policy:
+The shared logic is a single generic function that works for every context and every fee policy:
 
 ```js
 // The engine, written once for every context and fee policy: who gets
@@ -320,14 +321,14 @@ function settle<c, f>(ctx: c, policy: f, amount: uint256) returns ((address, uin
 }
 ```
 
-`settle` is the counterpart of the shared base method in an inheritance design, but it participates in no dispatch hierarchy.
+`settle` takes the place of the shared base contract in an inheritance design, but it is not part of any dispatch hierarchy.
 It takes its context and policy as ordinary arguments and calls the trait methods on them.
-Which implementation runs is determined by the static types of `ctx` and `policy`, resolved at compile time.
+The implementations that run are chosen at compile time, based on the types of `ctx` and `policy`.
 
 ### The leaves
 
-The deployable contracts each bind their own choice on each axis and call `settle`.
-This is the counterpart of an inheritance diamond's leaf contracts; note what is absent: no `is` clause, no `override` list, no `super`.
+Each deployable contract picks an option on each axis and calls `settle`.
+Note that there is no `is` clause, no `override` list, and no `super`:
 
 ```js
 contract VaultDirect {
@@ -358,33 +359,35 @@ contract VaultPremium {
 }
 ```
 
-A third vault, `VaultGasless`, binds `Signed` on the first axis and a constructor-configured `FlatFee` on the second, so anyone can relay a deposit and the credited account is recovered from a signature.
-It is deployed with its own constructor and its own storage, and it reuses the very same `settle`.
+A third vault, `VaultGasless`, uses `Signed` on the first axis and a `FlatFee` set in the constructor on the second.
+Anyone can relay a deposit, and the account to credit is recovered from a signature.
+It has its own constructor and storage, and uses the same `settle` function.
 
-Adding a fourth vault is a matter of choosing a point on each axis: `settle(Signed(...), Stacked(BasisFee(...), NoFee), amount)`.
-Adding a _new axis_, a withdrawal policy, a rounding rule, is a new trait and a new type parameter on `settle`, with no change to the existing options and no re-linearization of anything.
+Adding a fourth vault means picking an option on each axis: `settle(Signed(...), Stacked(BasisFee(...), NoFee), amount)`.
+Adding a _new axis_, such as a withdrawal policy or a rounding rule, means adding a new trait and a new type parameter to `settle`.
+The existing options do not change.
 
 ## Why the C3 Problems Cannot Occur
 
-Line the three surprises up against this design and each one becomes impossible to express, not merely discouraged.
+None of the three problems described earlier can be expressed in this design.
 
 **Dispatch does not depend on the deployed contract.**
-`FeePolicy.afterFee(policy, ...)` resolves on the static type of `policy`.
-There is no "next implementation in a list," so there is no list that a different deployment could reorder.
+`FeePolicy.afterFee(policy, ...)` is resolved based on the type of `policy`.
+There is no list of implementations, so there is nothing a different deployment could reorder.
 `BasisFee` computes the same fee in `VaultPremium` as it would anywhere else.
-Composition order is written explicitly in `Stacked(first, second)` at the use site, the one place a reader is already looking, instead of being an emergent property of an `is B, C` clause elsewhere.
+The order of composition is written explicitly as `Stacked(first, second)` where it is used, instead of following from an `is B, C` clause in another contract.
 
 **What you type-check is what runs.**
-Trait resolution is coherent: a type has exactly one implementation of a trait, and the compiler resolves each call to that implementation.
-The candidate considered during type checking _is_ the one selected at code generation.
-A `super` call cannot slip sideways into a stranger, because there is no `super` and no whole-program list to slip along.
-The guarantees you reason about locally, that `TxnContext<Signed>` recovers a signer via `ecrecover` and reverts on failure, hold wherever `Signed` is used.
+Trait resolution is coherent, which means a type has exactly one implementation of a trait and every call resolves to it.
+The implementation checked by the type checker is the one used at code generation.
+There is no `super` and no linearization, so a call cannot end up in an unrelated contract.
+What you know about `TxnContext<Signed>`, for example that it recovers a signer with `ecrecover` and reverts on failure, holds wherever `Signed` is used.
 
-**There is no construction-time dispatch inversion.**
-The shared logic lives in free functions (`settle`, the trait methods) that take their inputs as explicit values.
-No base constructor calls a virtual method that reaches down into a not-yet-initialized override, because there are no base constructors and no overrides.
-Each vault's constructor initializes only its own storage; `VaultGasless` sets its `flatFee` and nothing reads that field before it is set.
-The pathological "contract disagrees with itself" state has no way to arise.
+**Constructors cannot call uninitialized overrides.**
+The shared logic lives in free functions (`settle` and the trait methods) that take their inputs as explicit arguments.
+There are no base constructors and no overrides, so no constructor can call into code whose state is not yet initialized.
+Each vault's constructor initializes only its own storage.
+`VaultGasless` sets its `flatFee`, and nothing reads that field before it is set.
 
 ## Composing State, Not Just Behavior
 
