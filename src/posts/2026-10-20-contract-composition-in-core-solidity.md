@@ -7,30 +7,35 @@ author: Solidity Team
 category: Announcements
 ---
 
-Every non-trivial smart contract system is built by reusing code.
-Access control, pausing, reentrancy guards, fee logic, token standards: nobody wants to re-implement these for each contract, so we reach for a mechanism that lets one piece of behavior be shared across many contracts.
-In Classic Solidity that mechanism is almost always **inheritance**.
+Every non-trivial smart contract system reuses code.
+Access control, pausing, reentrancy guards, fee logic, and token standards are written once and shared across many contracts.
+In Classic Solidity, the mechanism for this is almost always **inheritance**.
 
-Inheritance is a fine tool for sharing code.
-The trouble is that it does not only share code.
-It folds every shared function, and every base's storage, into a single whole-program arrangement, `virtual` / `override` / `super` dispatch over one linearized storage layout, whose behavior is decided by the _final deployed contract_ rather than by the contract you are reading.
-The rules that make this well-defined, C3 linearization, produce results that regularly surprise even experienced Solidity developers, and that auditors have to reconstruct by hand.
+Inheritance works well for sharing code, but it does more than that.
+A derived contract also inherits the storage of all its bases, and calls through `virtual`, `override`, and `super` are resolved over a single ordering of all the contracts involved.
+That ordering is computed for the _final deployed contract_, not for the contract you are reading.
+The rule that computes it, called C3 linearization, regularly produces results that surprise experienced Solidity developers, and auditors have to work it out by hand.
 
-Core Solidity takes a different route.
-As [announced in our deep dive](https://soliditylang.org/blog/2025/11/14/core-solidity-deep-dive/), we are removing inheritance from the language entirely, and code reuse is expressed instead through traits, generics, values, and modules that own their state.
-This post walks through what that costs and what it buys, using two small but complete examples.
-The first is a family of vaults that compose their _behavior_ along two independent axes.
-The second is an ERC20 token assembled from independent `Ownable`, `Pausable`, and supply-cap modules that each carry their own _state_, the archetypal inheritance stack, built without a single base contract between them.
+Core Solidity takes a different approach.
+As [announced in our deep dive](https://soliditylang.org/blog/2025/11/14/core-solidity-deep-dive/), we are removing inheritance from the language entirely.
+Code reuse is expressed instead through traits, generics, values, and modules that own their state.
+This post shows what that costs and what it gains, using two small examples.
+The first is a family of vaults that combine different _behaviors_ along two independent axes.
+The second is an ERC20 token built from separate `Ownable`, `Pausable`, and supply-cap modules, each with its own _state_.
+This is the most common use of inheritance in Classic Solidity, built here without any base contracts.
 
 ## How Classic Solidity Composes Code
 
-The dominant pattern for reuse in Classic Solidity is to factor shared behavior into base contracts and mix them into a leaf.
-An ERC20 token inherits a base implementation and layers `Ownable`, `Pausable`, and `ReentrancyGuard` on top; a vault inherits an accounting base and overrides a hook or two.
-When two of those bases are themselves derived from a common ancestor, the inheritance graph becomes a _diamond_, and the compiler needs a rule to decide, for any function `f`, what "the next implementation of `f`" means.
+The most common way to reuse code in Classic Solidity is to put shared behavior into base contracts and inherit from them.
+An ERC20 token inherits a base implementation and adds `Ownable`, `Pausable`, and `ReentrancyGuard` on top.
+A vault inherits an accounting base and overrides a hook or two.
+When two of those bases inherit from a common ancestor, the inheritance graph forms a _diamond_.
+The compiler then needs a rule that decides, for any function `f`, which implementation of `f` comes next.
 
 That rule is **C3 linearization**.
-It flattens the inheritance graph into a single ordered list, computed over the most derived contract, in which each contract appears exactly once, precedes all of its own bases, and preserves the relative order of every `is` clause.
-Everything about `virtual`, `override`, and `super` follows from this one list: `super.f()` means "the next contract after me _in the linearization of the contract being deployed_ that defines `f`."
+It flattens the inheritance graph of the most derived contract into a single ordered list.
+Each contract appears exactly once and before all of its bases, and the relative order of every `is` clause is preserved.
+`virtual`, `override`, and `super` all follow from this list: `super.f()` means "the next contract after me _in the linearization of the contract being deployed_ that defines `f`."
 
 Together with virtual dispatch, this rule leads to three kinds of surprising behavior.
 
@@ -72,14 +77,13 @@ C alone    [C, A]           A.f                     13
 D          [D, C, B, A]     B.f  (!)                1234
 ```
 
-Deployed on its own, `C`'s `super.f()` reaches `A.f`, its only base.
-Deployed as part of `D`, the _same source_ reaches `B.f`, and `C` does not inherit from `B`.
-They are siblings; `B` may not even have existed when `C` was written.
-Nothing in `C` changed.
-The deployed contract's linearization did.
+When `C` is deployed on its own, its `super.f()` calls `A.f`, its only base.
+When `D` is deployed, the _same code_ in `C` calls `B.f`, even though `C` does not inherit from `B`.
+The two are siblings, and `B` may not even have existed when `C` was written.
+Nothing in `C` changed, only the linearization of the deployed contract.
 
-**`super` can land on a complete stranger.**
-Because the target is chosen from the deployed contract's list, it can be a contract that shares no ancestor with the caller at all:
+**`super` can call an unrelated contract.**
+Because the target is chosen from the linearization of the deployed contract, it can be a contract that shares no ancestor with the caller:
 
 ```solidity
 contract A {
@@ -107,15 +111,17 @@ contract D is A, X, B {
 }
 ```
 
-In `D`, whose linearization is `[D, B, X, A]`, the `super.f()` written inside `B` resolves to `X.f`, returning `100`.
-`X` is not a base of `B`, not a derived contract of `B`, and shares no ancestor with it.
-The only thing linking them is that some third contract, `D`, listed both.
-The candidate set that `B`'s `super.f()` was _type-checked_ against (the bases of `B`) is not the set it is _resolved_ over at code generation (the linearization of `D`).
-Anything true of `A.f` but not of `X.f`, its mutability, its gas cost, its reentrancy behavior, whether it even touches storage, simply does not carry over.
+The linearization of `D` is `[D, B, X, A]`, so the `super.f()` inside `B` calls `X.f` and returns `100`.
+`X` is not a base of `B`, not derived from `B`, and shares no ancestor with it.
+The only link between them is that a third contract, `D`, lists both.
+When `B` is type-checked, its `super.f()` is checked against the bases of `B`.
+At code generation, it is resolved over the linearization of `D`, which is a different set of contracts.
+Properties of `A.f`, such as its mutability, its gas cost, its reentrancy behavior, or whether it touches storage, do not necessarily hold for `X.f`.
 
-**Base constructors call into overrides whose state is still zero.**
-Virtual dispatch is fully live during construction, so a base constructor that calls a virtual function does not reach the base's own implementation.
-It reaches the most derived override, which runs before the constructors that give it something to read:
+**Base constructors can call overrides before their state is initialized.**
+Virtual dispatch already works during construction.
+A base constructor that calls a virtual function does not call the base's own implementation, but the most derived override.
+That override runs before the constructor that initializes the state it reads:
 
 ```solidity
 contract A {
@@ -140,15 +146,17 @@ contract B is A {
 }
 ```
 
-Deploy `B` and `captured` is `0`, while every later call to `f()` returns `100`.
-`super` walks the linearization from most derived to most base-like, and constructors run it in the exact opposite direction, so the override with the highest dispatch priority is the one initialized last, guaranteed to be least ready when a base constructor calls into it.
-The contract permanently disagrees with itself about a value it computed from its own code, and nothing warns you.
+After deploying `B`, `captured` is `0`, while every later call to `f()` returns `100`.
+Constructors run in the opposite order of the linearization, from the most base-like contract to the most derived one.
+This means the most derived override is always initialized last, so its state is never ready when a base constructor calls it.
+The contract ends up permanently storing a value that disagrees with its own code, and the compiler does not warn about it.
 
 None of these examples is exotic.
-No contract mentions its siblings, the functions are `view`, and they touch only ordinary state.
-The behavior is a property of _the whole program_, not of any file you can read in isolation.
-This is precisely the kind of finding that makes inheritance-heavy contracts expensive to audit: reviewers manually trace per-deployment linearizations, checking that no `super` chain routes into a stranger and that no constructor reads through a live override.
-That is tedious, error-prone work that scales with the number of contracts and bases in a codebase.
+No contract refers to its siblings, and the functions only touch ordinary state.
+The behavior depends on _the whole program_, not on any single file you can read.
+This is what makes inheritance-heavy contracts expensive to audit.
+Reviewers have to work out the linearization of each deployed contract by hand, and check that no `super` chain reaches an unrelated contract and that no constructor calls an override too early.
+This work is tedious and error-prone, and it grows with the number of contracts and bases in a codebase.
 
 ## Composition Without Inheritance in Core Solidity
 
