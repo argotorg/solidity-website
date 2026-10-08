@@ -367,28 +367,6 @@ Adding a fourth vault means picking an option on each axis: `settle(Signed(...),
 Adding a _new axis_, such as a withdrawal policy or a rounding rule, means adding a new trait and a new type parameter to `settle`.
 The existing options do not change.
 
-## Why the C3 Problems Cannot Occur
-
-None of the three problems described earlier can be expressed in this design.
-
-**Dispatch does not depend on the deployed contract.**
-`FeePolicy.afterFee(policy, ...)` is resolved based on the type of `policy`.
-There is no list of implementations, so there is nothing a different deployment could reorder.
-`BasisFee` computes the same fee in `VaultPremium` as it would anywhere else.
-The order of composition is written explicitly as `Stacked(first, second)` where it is used, instead of following from an `is B, C` clause in another contract.
-
-**What you type-check is what runs.**
-Trait resolution is coherent, which means a type has exactly one implementation of a trait and every call resolves to it.
-The implementation checked by the type checker is the one used at code generation.
-There is no `super` and no linearization, so a call cannot end up in an unrelated contract.
-What you know about `TxnContext<Signed>`, for example that it recovers a signer with `ecrecover` and reverts on failure, holds wherever `Signed` is used.
-
-**Constructors cannot call uninitialized overrides.**
-The shared logic lives in free functions (`settle` and the trait methods) that take their inputs as explicit arguments.
-There are no base constructors and no overrides, so no constructor can call into code whose state is not yet initialized.
-Each vault's constructor initializes only its own storage.
-`VaultGasless` sets its `flatFee`, and nothing reads that field before it is set.
-
 ## Composing State, Not Just Behavior
 
 The vaults compose behavior, but the context and fee policy they compose are stateless values passed to `settle`.
@@ -520,15 +498,28 @@ contract Token {
 }
 ```
 
-Each of the three C3 problems has a stateful equivalent, and none of them apply here:
+## Why the C3 Problems Cannot Occur
 
-- **Storage layout is namespaced, not linearized.** Each module's slot is derived from its own name, so the storage of the four modules cannot collide and reordering cannot move it. OpenZeppelin adds ERC-7201 on top of inheritance to get this, while here it is simply how modules store their state.
-- **The hook chain is a value, not a `super` chain.** `Stacked(Pausable, Capped)` checks pausing and then the cap because that is the order written in `update`, not because of the linearization.
-- **Initialization is explicit and ordered.** The constructor calls `initOwner` and then `setCap` in the order written, and each one only reads the slot it sets. No initializer runs before the state it depends on exists.
+None of the three problems described earlier can be expressed in either example.
 
-The `Token` contract declares no storage variables, but still combines four independent modules with state.
-Nothing is inherited.
-The state belongs to the modules, and namespacing keeps it separate.
+**Dispatch does not depend on the deployed contract.**
+`FeePolicy.afterFee(policy, ...)` is resolved based on the type of `policy`.
+There is no list of implementations, so there is nothing a different deployment could reorder.
+`BasisFee` computes the same fee in `VaultPremium` as it would anywhere else.
+The order of composition is written explicitly where it is used, instead of following from an `is B, C` clause in another contract.
+`Stacked(Pausable, Capped)` checks pausing and then the cap because that is the order written in `update`.
+
+**What you type-check is what runs.**
+Trait resolution is coherent, which means a type has exactly one implementation of a trait and every call resolves to it.
+The implementation checked by the type checker is the one used at code generation.
+There is no `super` and no linearization, so a call cannot end up in an unrelated contract.
+What you know about `TxnContext<Signed>`, for example that it recovers a signer with `ecrecover` and reverts on failure, holds wherever `Signed` is used.
+
+**Constructors cannot call uninitialized overrides.**
+The shared logic lives in free functions (`settle` and the trait methods) that take their inputs as explicit arguments.
+There are no base constructors and no overrides, so no constructor can call into code whose state is not yet initialized.
+Each vault's constructor initializes only its own storage, and `VaultGasless` sets its `flatFee` before anything reads it.
+The `Token` constructor calls `initOwner` and then `setCap` in the order written, and each one only reads the slot it sets.
 
 ## The Trade-off
 
