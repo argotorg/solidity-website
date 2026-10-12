@@ -317,7 +317,7 @@ In the meantime you can try the [playground](https://playground.solcore.solidity
 If you want to go further than the playground, the repository has [build instructions](https://github.com/argotorg/solcore#development) for the prototype compiler.
 
 In November we will be in Mumbai.
-At the [DeFi Security Summit](https://defisecuritysummit.org/) (1 and 2 November) we will give the talk "What you need to know about Core Solidity".
+At the [DeFi Security Summit](https://defisecuritysummit.org/) (1 and 2 November) we will give the talk ["What you need to know about Core Solidity"](https://defisecuritysummit.org/2026/agenda#jacob-czepluch).
 At [Devcon](https://devcon.org) we will run the workshop "Your first Core Solidity smart contract" on 5 November from 12:00 to 12:50 in the room Workshop 1.
 We are happy to talk to anyone there who wants a demo or has feedback or opinions on Solidity.
 
