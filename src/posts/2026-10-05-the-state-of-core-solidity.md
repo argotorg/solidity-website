@@ -121,8 +121,6 @@ Besides the examples linked above, it includes [three vaults composed over one s
 New language features are usually added to the solcore repository first and reach the playground later, so the playground can lag behind the list above.
 Structs, for example, are in the repository and, at the time of writing, not yet in the playground.
 
-[//]: # "TODO: get the team's decision on whether to state which code generation backend the playground uses, and adjust the playground paragraph and the backend sentences in the intro to match."
-
 We are also formalizing the semantics of Core Solidity in the Lean 4 proof assistant, in the [solcore-lean repository](https://github.com/argotorg/solcore-lean).
 This is work in progress, and we will share more once there are results to report.
 
@@ -323,5 +321,3 @@ We are happy to talk to anyone there who wants a demo or has feedback or opinion
 
 The interviews continue, and more are already lined up.
 If you write, audit, teach or build tools for Solidity and would like to be interviewed, share feedback or see a demo of Core Solidity, write to coresolidity at argot dot org.
-
-[//]: # "TODO: confirm that the coresolidity@argot.org mailbox is live and receives mail before publishing."
