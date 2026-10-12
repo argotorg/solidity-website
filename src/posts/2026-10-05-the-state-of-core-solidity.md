@@ -287,7 +287,7 @@ This is what has changed on our side so far:
 
 - We added playground features that people asked for, including bytecode output and calling deployed contracts in the page.
 - We corrected or extended example contracts after outside readers found problems in them.
-- We opened issues for questions that came up in our open team calls and in the interviews. In one interview, a guest expected a contract to fail to compile if a state variable holding an algebraic data type is not initialized in the constructor. Today it starts as its first variant, as an uninitialized enum does in Classic Solidity. We filed [an issue](https://github.com/argotorg/solcore/issues/588) for it, and whether to require explicit initialization is still open.
+- We opened issues for feedback from our open team calls and the interviews. One point raised in an interview is that a state variable holding an algebraic data type should have to be initialized explicitly. Today it starts as its first variant, just as an uninitialized enum starts as its first member in Classic Solidity. Requiring an explicit value would therefore be a breaking change compared to Classic Solidity. At the time of writing, this is tracked in an [open issue](https://github.com/argotorg/solcore/issues/588).
 - We revised our interview questions based on what guests told us.
 
 Three things stood out beyond the individual requests.
