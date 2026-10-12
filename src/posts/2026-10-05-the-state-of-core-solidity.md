@@ -87,9 +87,10 @@ contract Escrow {
 ```
 
 Contracts and functions look the way a Solidity developer expects.
-The visible differences are that types follow names (`phase: Phase`, `amount: uint256`), that everything beyond a small set of built-in types is imported explicitly, including the standard library, and that an `enum` variant can carry data.
+The visible differences are that types follow names (`phase: Phase`, `amount: uint256`), that nothing beyond a small set of built-in types is in scope unless it is imported, including the standard library, and that an `enum` variant can carry data.
 An enum like `Phase` is what we mean by an algebraic data type.
-The imports also bring in the library code behind the contract's dispatch and the storage encoding of `Phase`.
+`std` provides basic types and functions such as `uint256` and `revertWithError`, `std.dispatch` provides the code behind public functions, and `std.Generic` and `std.StorageGeneric` let an algebraic data type like `Phase` live in storage.
+Today these have to be wildcard imports, because the code the compiler generates for dispatch and storage refers to names from them.
 `match` takes `Phase` apart, and a `match` that leaves a case unhandled and has no `default` arm is rejected by the compiler.
 
 The example shows a rough edge as well: there is no `revert` statement, so reverting with a message goes through the standard library function `revertWithError`, and because the compiler does not know that it never returns, `release` still needs a `return` after it.
@@ -239,6 +240,8 @@ Most of the guests who took a position were comfortable with removing inheritanc
 A few teams depend on specific inheritance patterns today, and they want to see those patterns expressed with composition before they form a view.
 The questions we heard were whether composition holds up for large real-world contracts, and how a reusable module can own its state without handling raw storage slots.
 The modules in the [extensions](https://playground.solcore.soliditylang.org/#/examples/extensions) and [reentrancy](https://playground.solcore.soliditylang.org/#/examples/reentrancy) examples read and write ERC-7201 namespaced storage slots directly today.
+Beyond a standard library function that computes the slot, the language has no support for this pattern yet.
+The compiler does not know about these slots, so it cannot report them or detect when two modules use the same slot, as `solc` can for state variables in Classic Solidity.
 Several of the playground examples are a direct result of feedback and requests from the interviews, and we are building more and larger composition examples.
 
 ### Tooling and adoption
@@ -257,7 +260,7 @@ The first is compatibility between the two languages.
 Core Solidity is designed to use the same ABI as Classic Solidity, so Core Solidity contracts will be able to call Classic Solidity contracts.
 In the prototype, typed external calls are still in progress and the ABI encoding has known differences from Classic Solidity.
 The other direction is the open part.
-Algebraic data types in an external interface need ABI encodings that Classic Solidity does not have, so a Classic Solidity contract cannot call every Core Solidity interface without further work.
+Algebraic data types in an external interface need encodings that the current ABI specification does not define, so a contract in Classic Solidity, or in any other language that implements the current ABI, cannot call every Core Solidity interface without further work.
 Most of the guests who took a position were comfortable with treating this as a lower priority.
 One asked us to support both directions if we can, so that the two languages stay composable with each other.
 
@@ -286,7 +289,7 @@ This is what has changed on our side so far:
 
 - We added playground features that people asked for, including bytecode output and calling deployed contracts in the page.
 - We corrected or extended example contracts after outside readers found problems in them.
-- We opened issues for language problems that guests found during calls. One guest noticed that a state variable holding an algebraic data type silently starts as its first variant when the constructor does not initialize it. We filed [the issue](https://github.com/argotorg/solcore/issues/588) the same day, and a fix is in an open pull request.
+- We opened issues for questions that came up in our open team calls and in the interviews. In one interview, a guest expected a contract to fail to compile if a state variable holding an algebraic data type is not initialized in the constructor. Today it starts as its first variant, as an uninitialized enum does in Classic Solidity. We filed [an issue](https://github.com/argotorg/solcore/issues/588) for it, and whether to require explicit initialization is still open.
 - We revised our interview questions based on what guests told us.
 
 Three things stood out beyond the individual requests.
@@ -298,8 +301,9 @@ We will communicate this more clearly going forward.
 The playground examples are enough for a first read, and after that people want something to work from.
 We will prioritize bringing the documentation up to date in the upcoming development cycles.
 
-**Compilation time:** It matters to users of Classic Solidity today, and it was among the problems raised most often.
-Once the SSA CFG code generator is out of its experimental stage and fixes stack-too-deep errors in production, improving compilation time becomes the priority, and the SSA CFG work is a good foundation for it.
+**Compilation time:** Slow compilation is a pain point that users of Classic Solidity raise again and again, and it was among the problems mentioned most often in the interviews.
+It is not specific to either language.
+Compilation time is determined almost entirely by the backend that both languages share, mainly the optimizer and the step from Yul to EVM bytecode, so the problem carries over to Core Solidity, and improvements there benefit both languages.
 
 ## What comes next
 
@@ -314,10 +318,10 @@ If you want to go further than the playground, the repository has [build instruc
 
 In November we will be in Mumbai.
 At the [DeFi Security Summit](https://defisecuritysummit.org/) (1 and 2 November) we will give the talk "What you need to know about Core Solidity".
-At [Devcon](https://devcon.org) we will run the workshop "Your first Core Solidity smart contract".
+At [Devcon](https://devcon.org) we will run the workshop "Your first Core Solidity smart contract" on 5 November from 12:00 to 12:50 in the room Workshop 1.
 We are happy to talk to anyone there who wants a demo or has feedback or opinions on Solidity.
 
-[//]: # "TODO: add the day and time of the Devcon workshop once the schedule is announced."
-
 The interviews continue, and more are already lined up.
-If you write, audit, teach or build tools for Solidity and would like to be interviewed, share feedback or see a demo of Core Solidity, write to jacob at argot dot org.
+If you write, audit, teach or build tools for Solidity and would like to be interviewed, share feedback or see a demo of Core Solidity, write to coresolidity at argot dot org.
+
+[//]: # "TODO: confirm that the coresolidity@argot.org mailbox is live and receives mail before publishing."
