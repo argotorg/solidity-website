@@ -347,7 +347,7 @@ The vaults compose behavior, but the context and fee policy they compose are sta
 The harder case is when the reusable pieces have _state_ of their own.
 A typical example is an ERC20 token with an owner, pausing, and a supply cap, written as `contract Token is ERC20, Ownable, Pausable, Capped`.
 Each base contributes storage, such as `_owner`, a paused flag, `_balances`, or a cap.
-Bases can also override a `_beforeTokenTransfer` hook, and the overrides are chained through `super`.
+Bases can also override `_update`, the internal function that every balance change goes through, and the overrides are chained through `super`.
 
 This is where the coupling in inheritance matters most.
 The linearization decides the storage layout of all four bases, as well as the order of the hooks.
