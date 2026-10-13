@@ -91,8 +91,8 @@ An enum like `Phase` is what we mean by an algebraic data type.
 Today these have to be wildcard imports, because the code the compiler generates for dispatch and storage refers to names from them.
 `match` takes `Phase` apart, and a `match` that leaves a case unhandled and has no `default` arm is rejected by the compiler.
 
-The example shows a rough edge as well: there is no `revert` statement, so reverting with a message goes through the standard library function `revertWithError`, and because the compiler does not know that it never returns, `release` still needs a `return` after it.
-The contract only tracks state, and value transfer and access control are left out to keep it short.
+The example shows two rough edges as well: there are no custom errors yet, so the reverts carry plain strings, and `release` needs a `return` after `revertWithError` to compile, although that line is never reached, which is [an open issue](https://github.com/argotorg/solcore/issues/590).
+The example leaves out value transfer and access control to keep it short.
 You can open it in the [playground](https://playground.solcore.soliditylang.org/#/examples/pattern-matching), change it and call it.
 
 The prototype compiler in the [solcore repository](https://github.com/argotorg/solcore) supports the following today.
@@ -125,9 +125,10 @@ This is work in progress, and we will share more once there are results to repor
 ## What is still missing
 
 Several features that production contracts rely on are still missing.
-The lists below describe the main branch of the solcore repository.
+The lists below describe the prototype compiler on the main branch of the solcore repository.
+Many of the missing features are planned for the language, and their absence from the prototype does not mean they will be left out of Core Solidity.
 Pull requests are opened and merged every week, so these lists will change soon after this post is published.
-They are also not exhaustive: the [syntax chapter](https://argotorg.github.io/solcore/sail/syntax.html) of the reference documentation describes what the compiler accepts today.
+They are also not exhaustive.
 
 ### In progress, with open pull requests
 
@@ -139,7 +140,7 @@ They are also not exhaustive: the [syntax chapter](https://argotorg.github.io/so
 ### Not there yet
 
 - Checked arithmetic. Integer operations wrap today, and making them checked by default is still to be done.
-- Events and `emit`. Raw logs work.
+- Events and `emit`. Raw EVM logs work.
 - Custom error declarations and errors with arguments. Reverting with a string or with an error selector works, through `require` or `revertWithError`, although the string is not yet encoded the way Classic Solidity encodes `Error(string)`.
 - `view` and `pure`.
 - Immutables.
@@ -147,6 +148,8 @@ They are also not exhaustive: the [syntax chapter](https://argotorg.github.io/so
 - A replacement for `try`/`catch`.
 - Function selectors through `.selector` or a similar mechanism.
 - Several operators: shifts, exponentiation, increment and decrement, and unary minus.
+- Control over the storage layout, like `layout at` in Classic Solidity.
+- Transient state variables. The `tload` and `tstore` opcodes can be used directly.
 
 Gas cost and code size have not been a focus of the prototype, and we have not compared them with Classic Solidity yet.
 
@@ -184,7 +187,8 @@ This is the shape of it, shortened from the [extensions example](https://playgro
 
 ```solidity
 // ownable.sol
-export { owner, initOwner, requireOwner, transferOwnership };
+// Imports and the ownerSlot() and owner() helpers are left out here.
+export {owner, initOwner, requireOwner, transferOwnership};
 
 function initOwner(who: address) {
     require(owner() == address(0), "already initialized");
@@ -199,8 +203,11 @@ function transferOwnership(to: address) {
     requireOwner();
     sstore(ownerSlot(), Typedef.rep(to));
 }
+```
 
+```solidity
 // Token.sol
+// Other imports are left out here.
 import {owner as storedOwner, initOwner, requireOwner, transferOwnership as setOwner} from ownable;
 
 contract Token {
