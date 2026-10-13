@@ -238,10 +238,11 @@ The auditors and security researchers who saw this liked it, because finding the
 Most of the guests who took a position were comfortable with removing inheritance, and several of those who audit contracts said inheritance makes review harder.
 A few teams depend on specific inheritance patterns today, and they want to see those patterns expressed with composition before they form a view.
 The questions we heard were whether composition holds up for large real-world contracts, and how a reusable module can own its state without handling raw storage slots.
-The modules in the [extensions](https://playground.solcore.soliditylang.org/#/examples/extensions) and [reentrancy](https://playground.solcore.soliditylang.org/#/examples/reentrancy) examples read and write ERC-7201 namespaced slots directly today.
-Beyond a standard library function that computes the slot, the language has no support for this pattern yet.
-The compiler does not know about these slots, so it cannot report them or keep two modules from using the same slot, as `solc` does when it lays out state variables in Classic Solidity.
 Several of the playground examples are a direct result of feedback and requests from the interviews, and we are building more and larger composition examples.
+
+The modules in the [extensions](https://playground.solcore.soliditylang.org/#/examples/extensions) and [reentrancy](https://playground.solcore.soliditylang.org/#/examples/reentrancy) examples read and write ERC-7201 namespaced slots directly today.
+A known downside of this approach is that beyond a standard library function that computes the slot, the language has no support for this pattern yet.
+The compiler does not know about these slots, so it cannot report them or keep two modules from using the same slot, as `solc` does when it lays out state variables in Classic Solidity.
 
 ### Tooling and adoption
 
@@ -250,14 +251,14 @@ For tools that read the syntax tree they expect mostly a new parser, and tools t
 Static analyzers that reason about types will need more than a parser, and how much more depends on the final type system.
 One asked that the syntax tree stay close to today's.
 
-On adoption, we heard that conservative, established projects adopt new compiler versions only after a track record, and once auditors and tooling are ready, and expect to treat Core Solidity the same way.
+On adoption, we heard that conservative, established projects adopt new compiler versions only after they have a proven track record, and once auditors and tooling are ready, and expect to treat Core Solidity the same way.
 
 ### Open questions
 
 We also asked about two topics that are still open.
 
-The first is compatibility between the two languages.
-Core Solidity is designed to use the same ABI as Classic Solidity, so Core Solidity contracts will be able to call Classic Solidity contracts.
+The first is ABI compatibility between the two languages.
+Core Solidity is designed to use the same ABI as Classic Solidity, so Core Solidity contracts will be able to externally call all Classic Solidity contracts.
 In the prototype, typed external calls are still in progress and the ABI encoding has known differences from Classic Solidity.
 The other direction is the open part.
 Algebraic data types in an external interface need encodings that the current ABI specification does not define, so a contract in Classic Solidity, or in any other language that implements the current ABI, cannot call every Core Solidity interface without further work.
@@ -293,7 +294,7 @@ On our side, the interviews have already led to these changes:
 - We opened issues for feedback from our open team calls and the interviews. One point raised in an interview is that a state variable holding an algebraic data type should have to be initialized explicitly. Today it starts as its first variant, just as an uninitialized enum starts as its first member in Classic Solidity. Requiring an explicit value would therefore be a breaking change compared to Classic Solidity. At the time of writing, this is tracked in an [open issue](https://github.com/argotorg/solcore/issues/588).
 - We revised our interview questions based on what guests told us.
 
-Three things stood out beyond the individual requests.
+Three things stood out beyond the individual requests:
 
 **New frontend, same backend:** Many people we spoke with did not know that Core Solidity is a new frontend on the existing backend.
 We will communicate this more clearly going forward.
