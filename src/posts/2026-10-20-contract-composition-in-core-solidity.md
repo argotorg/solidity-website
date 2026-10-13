@@ -26,16 +26,10 @@ This is the most common use of inheritance in Classic Solidity, built here witho
 
 ## How Classic Solidity Composes Code
 
-The most common way to reuse code in Classic Solidity is to put shared behavior into base contracts and inherit from them.
-An ERC20 token inherits a base implementation and adds `Ownable`, `Pausable`, and `ReentrancyGuard` on top.
-A vault inherits an accounting base and overrides a hook or two.
-When two of those bases inherit from a common ancestor, the inheritance graph forms a _diamond_.
-The compiler then needs a rule that decides, for any function `f`, which implementation of `f` comes next.
-
+In Classic Solidity, shared behavior goes into base contracts that other contracts inherit from.
+When two bases inherit from a common ancestor, the inheritance graph forms a _diamond_, and the compiler needs a rule that decides which implementation of a function comes next.
 That rule is **C3 linearization**.
-It flattens the inheritance graph of the most derived contract into a single ordered list.
-Each contract appears exactly once and before all of its bases, and the relative order of every `is` clause is preserved.
-`virtual`, `override`, and `super` all follow from this list: `super.f()` means "the next contract after me _in the linearization of the contract being deployed_ that defines `f`."
+It flattens the inheritance graph of the most derived contract into a single ordered list, and `super.f()` means "the next contract after me _in the linearization of the contract being deployed_ that defines `f`."
 
 Together with virtual dispatch, this rule leads to three kinds of surprising behavior.
 
