@@ -2,7 +2,7 @@
 layout: post
 published: true
 title: 'The State of Core Solidity'
-date: '2026-10-13'
+date: '2026-10-14'
 author: Solidity Team
 category: Announcements
 ---
