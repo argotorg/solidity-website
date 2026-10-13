@@ -134,11 +134,11 @@ They are also not exhaustive: the [syntax chapter](https://argotorg.github.io/so
 - General memory arrays and array slices. Memory arrays exist only in a limited form today.
 - Signed integers and integer widths other than 256 bits. Today `uint256` is the only runtime integer type besides `word`, the raw 256-bit EVM word.
 - Interfaces and calls to other contracts, starting with basic types. Today only low-level calls are available.
+- Short-circuit evaluation of `&&` and `||`. Both operands are evaluated today.
 
 ### Not there yet
 
 - Checked arithmetic. Integer operations wrap today, and making them checked by default is still to be done.
-- Short-circuit evaluation of `&&` and `||`. Both operands are evaluated today.
 - Events and `emit`. Raw logs work.
 - Custom error declarations and errors with arguments. Reverting with a string or with an error selector works, through `require` or `revertWithError`, although the string is not yet encoded the way Classic Solidity encodes `Error(string)`.
 - `view` and `pure`.
