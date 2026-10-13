@@ -282,8 +282,10 @@ Several concluded that this raises the value of readable, explicit code, and one
 
 ## What we changed and what we learned
 
-The interviews are meant to work in both directions.
-This is what has changed on our side so far:
+The interviews are not only a way for us to collect feedback.
+They also show the people we talk to what we are working on and where the language is heading.
+Several guests have recommended who we should talk to next, so the conversations have also led to new contacts.
+On our side, the interviews have already led to these changes:
 
 - We added playground features that people asked for, including bytecode output and calling deployed contracts in the page.
 - We corrected or extended example contracts after outside readers found problems in them.
