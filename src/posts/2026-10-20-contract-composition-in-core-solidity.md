@@ -495,10 +495,12 @@ For contracts where an unexpected dispatch order or a shifted storage slot can l
 Core Solidity is still a prototype.
 The syntax is provisional and the standard library is still growing.
 The examples also take shortcuts that production code should not.
-The vaults credit balances without actually receiving tokens, and the signed digest does not include a nonce or chain ID.
+The vaults credit balances without actually receiving tokens, and the signed digest does not include a nonce, the chain ID, or the vault address.
+`BasisFee` can also overflow for very large amounts, because `uint256` arithmetic in the standard library is not checked yet.
 The token does not implement approvals.
 The composition mechanism itself, using traits, generics, values, and modules that own their state, is the one we plan to ship.
 
-The full examples are available in the playground: the [fee-policy vaults](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition) and the [stateful token extensions](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/extensions).
-The prototype is available at [github.com/argotorg/solcore](https://github.com/argotorg/solcore).
+You can try both examples in the [online playground](https://playground.solcore.soliditylang.org/).
+The full source is also available on GitHub: the [fee-policy vaults](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition) and the [stateful token extensions](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/extensions).
+The playground runs on [solcore-rs](https://github.com/argotorg/solcore-rs), a Rust implementation of the [Core Solidity prototype](https://github.com/argotorg/solcore).
 We are looking forward to your feedback.
