@@ -14,15 +14,15 @@ In Classic Solidity, the mechanism for this is almost always **inheritance**.
 Inheritance works well for sharing code, but it does more than that.
 A derived contract also inherits the storage of all its bases, and calls through `virtual`, `override`, and `super` are resolved over a single ordering of all the contracts involved.
 That ordering is computed for the _final deployed contract_, not for the contract you are reading.
-The rule that computes it, called C3 linearization, regularly produces results that surprise experienced Solidity developers, and auditors have to work it out by hand.
+The rule that computes it, called C3 linearization, can produce results that are hard to predict, and auditors have to work it out by hand.
 
 Core Solidity takes a different approach.
 As [announced in our deep dive](https://soliditylang.org/blog/2025/11/14/core-solidity-deep-dive/), we are removing inheritance from the language entirely.
 Code reuse is expressed instead through traits, generics, values, and modules that own their state.
 This post shows what that costs and what it gains, using two small examples.
-The first is a family of vaults that combine different _behaviors_ along two independent axes.
+The first is a family of vaults that combine different _behaviors_ for two independent choices.
 The second is an ERC20 token built from separate `Ownable`, `Pausable`, and supply-cap modules, each with its own _state_.
-This is the most common use of inheritance in Classic Solidity, built here without any base contracts.
+This is a common use of inheritance in Classic Solidity, built here without any base contracts.
 
 ## How Classic Solidity Composes Code
 
@@ -31,12 +31,14 @@ When two bases inherit from a common ancestor, the inheritance graph forms a _di
 That rule is **C3 linearization**.
 It flattens the inheritance graph of the most derived contract into a single ordered list, and `super.f()` means "the next contract after me _in the linearization of the contract being deployed_ that defines `f`."
 
-Together with virtual dispatch, this rule leads to three kinds of surprising behavior.
+## Problems with C3 Linearization
 
-## The C3 Linearization Trap
+Together with virtual dispatch, C3 linearization leads to three kinds of surprising behavior.
+Each one is shown below with a small example.
 
-**`super` is not your parent, and the same source dispatches differently per deployment.**
-Consider a textbook diamond:
+### `super` does not always call the parent contract
+
+Consider a simple diamond:
 
 ```solidity
 contract A {
@@ -44,16 +46,19 @@ contract A {
         return 1;
     }
 }
+
 contract B is A {
     function f() public virtual override returns (uint) {
         return super.f()*10 + 2;
     }
 }
+
 contract C is A {
     function f() public virtual override returns (uint) {
         return super.f()*10 + 3;
     }
 }
+
 contract D is B, C {
     function f() public override(B, C) returns (uint) {
         return super.f()*10 + 4;
@@ -68,7 +73,7 @@ What it reaches depends on which contract is deployed:
 deployed   linearization    C's super.f() reaches   f() returns
 --------   --------------   ---------------------   -----------
 C alone    [C, A]           A.f                     13
-D          [D, C, B, A]     B.f  (!)                1234
+D          [D, C, B, A]     B.f                     1234
 ```
 
 When `C` is deployed on its own, its `super.f()` calls `A.f`, its only base.
@@ -76,7 +81,8 @@ When `D` is deployed, the _same code_ in `C` calls `B.f`, even though `C` does n
 The two are siblings, and `B` may not even have existed when `C` was written.
 Nothing in `C` changed, only the linearization of the deployed contract.
 
-**`super` can call an unrelated contract.**
+### `super` can call an unrelated contract
+
 Because the target is chosen from the linearization of the deployed contract, it can be a contract that shares no ancestor with the caller:
 
 ```solidity
@@ -112,7 +118,8 @@ When `B` is type-checked, its `super.f()` is checked against the bases of `B`.
 At code generation, it is resolved over the linearization of `D`, which is a different set of contracts.
 Properties of `A.f`, such as its mutability, its gas cost, its reentrancy behavior, or whether it touches storage, do not necessarily hold for `X.f`.
 
-**Base constructors can call overrides before their state is initialized.**
+### Base constructors can call overrides before their state is initialized
+
 Virtual dispatch already works during construction.
 A base constructor that calls a virtual function does not call the base's own implementation, but the most derived override.
 That override runs before the constructor that initializes the state it reads:
@@ -128,6 +135,7 @@ contract A {
         return 1;
     }
 }
+
 contract B is A {
     uint public rate;
     constructor() {
@@ -143,9 +151,9 @@ contract B is A {
 After deploying `B`, `captured` is `0`, while every later call to `f()` returns `100`.
 Constructors run in the opposite order of the linearization, from the most base-like contract to the most derived one.
 This means the most derived override is always initialized last, so its state is never ready when a base constructor calls it.
-The contract ends up permanently storing a value that disagrees with its own code, and the compiler does not warn about it.
+The compiler does not warn about this.
 
-None of these examples is exotic.
+All three examples use ordinary code.
 No contract refers to its siblings, and the functions only touch ordinary state.
 The behavior depends on _the whole program_, not on any single file you can read.
 This is what makes inheritance-heavy contracts expensive to audit.
@@ -156,7 +164,7 @@ This work is tedious and error-prone, and it grows with the number of contracts 
 
 Core Solidity still lets you share behavior across contracts, but without inheritance.
 There is no `virtual`, no `override`, no `super`, and no linearization.
-Reuse is expressed with four ingredients that are already in the language:
+Reuse is expressed with four features that are already in the language:
 
 - **Traits** (type classes) declare an interface that many types can implement.
 - **Generics** let a function be written once and reused for every type that satisfies a trait.
@@ -167,22 +175,22 @@ Like everything in the prototype, the syntax below is provisional and may change
 The code is taken from a [runnable example in the playground](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition), which type-checks and compiles to executable code today.
 The snippets in this post are shortened, and the full examples are linked at the end.
 
-### The example: vaults that vary along two axes
+### The example: vaults with two independent choices
 
-We want a family of deposit vaults that differ along two _independent_ axes:
+We want a family of deposit vaults that differ in two _independent_ choices:
 
 1. **Where does the acting address come from?** A direct call, where the transaction caller acts for themselves, or a relayed call, where the acting address is recovered from a signature.
 2. **How much of a deposit is credited?** No fee, a flat fee, a percentage fee, or some composition of those.
 
 In Classic Solidity, you would typically write a base contract `VaultBase` with two virtual hooks, `originator()` and `afterFee()`.
 Each option would be a mixin contract that overrides one of the hooks, and each vault would inherit the mixins it needs.
-With a few options on each axis, you quickly end up with diamonds and `override(...)` lists.
+With a few options for each choice, you quickly end up with diamonds and `override(...)` lists.
 
 Here is the same design with traits.
-The first axis is a trait with one method, and each option is a small type with its own `impl`:
+The first choice is a trait with one method, and each option is a small type with its own `impl`:
 
 ```js
-// Axis one: where does the acting address come from?
+// Where does the acting address come from?
 trait TxnContext<c> {
     function originator(ctx: c) returns (address);
 }
@@ -209,8 +217,7 @@ impl TxnContext<Signed> {
         match (ctx) {
             case Signed(digest, v, r, s) {
                 // std's ecrecover reverts on malleable, failed, or
-                // zero-address recovery, so this can never return a bogus
-                // signer. The invariant lives in one place.
+                // zero-address recovery.
                 return ecrecover(digest, v, r, s);
             }
         }
@@ -218,10 +225,10 @@ impl TxnContext<Signed> {
 }
 ```
 
-The second axis is another trait, with the fee options as their own types:
+The second choice is another trait, with the fee options as their own types:
 
 ```js
-// Axis two: how much of a deposit is credited?
+// How much of a deposit is credited?
 trait FeePolicy<f> {
     function afterFee(policy: f, amount: uint256) returns (uint256);
 }
@@ -253,22 +260,19 @@ impl FeePolicy<BasisFee> {
 
 A third policy, `FlatFee`, subtracts a fixed fee and is implemented in the same way.
 
-Two things are worth noting.
 First, each `impl` block is the _only_ place `afterFee` is defined for its type.
 A type can implement a trait only once, so there is no need for an `override(...)` list to choose between implementations.
 Second, the behavior of `BasisFee` depends only on its own `impl`.
 Nothing else in the program can change it.
 
-### Composition is a value, not an inheritance list
+### Combining fee policies
 
-It gets more interesting when fee policies are combined, for example a percentage fee followed by a flat fee.
+Fee policies can also be combined, for example a percentage fee followed by a flat fee.
 With inheritance, the linearization would decide which one runs first.
 In Core Solidity, the combination is just another type, and the order is the order in which you write it:
 
 ```js
-// Policies compose as values, applied left to right. The order is the
-// expression written at the use site, not the C3 linearization of an
-// inheritance list.
+// Policies compose as values, applied left to right.
 enum Stacked<f, g> {
     Stacked(f, g)
 }
@@ -292,8 +296,8 @@ No other contract can change this.
 The shared logic is a single generic function that works for every context and every fee policy:
 
 ```js
-// The engine, written once for every context and fee policy: who gets
-// credited with how much. Storage stays with each contract.
+// Written once for every context and fee policy: who gets credited
+// with how much. Storage stays with each contract.
 function settle<c, f>(ctx: c, policy: f, amount: uint256) returns ((address, uint256))
     where c: TxnContext, f: FeePolicy
 {
@@ -305,9 +309,9 @@ function settle<c, f>(ctx: c, policy: f, amount: uint256) returns ((address, uin
 It takes its context and policy as ordinary arguments and calls the trait methods on them.
 The implementations that run are chosen at compile time, based on the types of `ctx` and `policy`.
 
-### The leaves
+### The vault contracts
 
-Each deployable contract picks an option on each axis and calls `settle`.
+Each deployable contract picks an option for each choice and calls `settle`.
 For example, `VaultPremium` takes direct deposits and charges the stacked fee from above.
 Note that there is no `is` clause, no `override` list, and no `super`:
 
@@ -328,15 +332,15 @@ contract VaultPremium {
 ```
 
 A second vault, `VaultDirect`, does the same with `NoFee`.
-A third vault, `VaultGasless`, uses `Signed` on the first axis and a `FlatFee` set in the constructor on the second.
+A third vault, `VaultGasless`, uses `Signed` for the first choice and a `FlatFee` set in the constructor for the second.
 Anyone can relay a deposit, and the account to credit is recovered from a signature.
 It has its own constructor and storage, and uses the same `settle` function.
 
-Adding a fourth vault means picking an option on each axis: `settle(Signed(...), Stacked(BasisFee(...), NoFee), amount)`.
-Adding a _new axis_, such as a withdrawal policy or a rounding rule, means adding a new trait and a new type parameter to `settle`.
+Adding a fourth vault means picking an option for each choice: `settle(Signed(...), Stacked(BasisFee(...), NoFee), amount)`.
+Adding a _new choice_, such as a withdrawal policy or a rounding rule, means adding a new trait and a new type parameter to `settle`.
 The existing options do not change.
 
-## Composing State, Not Just Behavior
+## Composing Contracts with State
 
 The vaults compose behavior, but the context and fee policy they compose are stateless values passed to `settle`.
 The harder case is when the reusable pieces have _state_ of their own.
@@ -344,10 +348,9 @@ A typical example is an ERC20 token with an owner, pausing, and a supply cap, wr
 Each base contributes storage, such as `_owner`, a paused flag, `_balances`, or a cap.
 Bases can also override `_update`, the internal function that every balance change goes through, and the overrides are chained through `super`.
 
-This is where the coupling in inheritance matters most.
 The linearization decides the storage layout of all four bases, as well as the order of the hooks.
 Each base's initializer also has to run in that order, or a later read sees zero.
-The shared layout is fragile enough under reordering and upgrades that OpenZeppelin adopted [ERC-7201 namespaced storage](https://eips.ethereum.org/EIPS/eip-7201) to avoid it.
+OpenZeppelin uses [ERC-7201 namespaced storage](https://eips.ethereum.org/EIPS/eip-7201) for its upgradeable contracts.
 
 Core Solidity builds the same token from self-contained modules.
 Each module keeps its storage in an ERC-7201 namespaced slot.
@@ -355,7 +358,7 @@ Modules that need to run on every transfer also provide a `TransferHook` impleme
 Here is the complete ownership module, a single slot and the functions that use it:
 
 ```js
-// ownable.sol -- owns one ERC-7201 namespaced slot; nothing is inherited.
+// ownable.sol: owns one ERC-7201 namespaced slot.
 function ownerSlot() returns (word) {
     return Typedef.rep(erc7201("token.ownable"));
 }
@@ -385,7 +388,7 @@ trait TransferHook<h> {
 }
 
 enum NoHook {
-    NoHook  // identity chain; monomorphization erases it
+    NoHook  // an empty hook chain
 }
 
 impl TransferHook<NoHook> {
@@ -416,7 +419,7 @@ The ledger module owns the balances and the total supply.
 It exposes a single `apply` function, which runs one hook chain before and one after every balance change, so no hook can be skipped:
 
 ```js
-// erc20core.sol -- the only exported way to move balances.
+// erc20core.sol: the only exported way to move balances.
 function apply<b, a>(before: b, after: a, from: Option<address>, to: Option<address>, amount: uint256)
     where b: TransferHook, a: TransferHook
 {
@@ -466,9 +469,8 @@ There is no list of implementations, so there is nothing a different deployment 
 The order of composition is written explicitly where it is used, instead of following from an `is B, C` clause in another contract.
 `Stacked(Pausable, Capped)` checks pausing and then the cap because that is the order written in `update`.
 
-**What you type-check is what runs.**
+**Type checking and code generation use the same implementation.**
 Trait resolution is coherent, which means a type has exactly one implementation of a trait and every call resolves to it.
-The implementation checked by the type checker is the one used at code generation.
 There is no `super` and no linearization, so a call cannot end up in an unrelated contract.
 What you know about `TxnContext<Signed>`, for example that it recovers a signer with `ecrecover` and reverts on failure, holds wherever `Signed` is used.
 
@@ -486,12 +488,11 @@ In Core Solidity you write these connections yourself.
 Each vault declares its own `balances` mapping, and the token initializes each module in its constructor and lists its hook chain in `update`.
 There is a bit more code to write, and the compiler does not lay out storage across a hierarchy for you.
 
-In return, every connection is _local and visible_.
+In return, each connection is written where it is used.
 Inheritance ties together code reuse, storage layout, and dispatch, and controls all three with the same `is` clause.
 Core Solidity separates them.
 Behavior is a trait implemented once per type, composition is a value applied in the order you write it, and shared state lives in modules with namespaced slots.
 As a result, both dispatch and storage layout can be understood from the file you are reading.
-For contracts where an unexpected dispatch order or a shifted storage slot can lose funds, that is worth the extra code.
 
 Core Solidity is still a prototype.
 The syntax is provisional and the standard library is still growing.
