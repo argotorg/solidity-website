@@ -37,7 +37,7 @@ A contract is only affected if **all** of the following conditions are met:
 2. The optimizer step sequence contains `LoadResolver` (`L`) or `EqualStoreEliminator` (`E`).
    The default sequence contains both.
 3. The code is compiled with `--via-ir` or `--strict-assembly`.
-   With the evmasm pipeline, only compiler-generated Yul utility functions and inline assembly blocks that do not refer to any Solidity variables or functions can be affected.
+   Under the evmasm pipeline, compiler-generated Yul utility functions and inline assembly blocks that do not refer to any Solidity variables or functions are affected as well.
 4. In the intermediate code the optimizer works on, a variable used to compute memory or storage addresses is reassigned.
    One address is derived from its value before the reassignment and another from its value after it, using different constant offsets.
 5. At runtime, the two addresses point to the same location.
