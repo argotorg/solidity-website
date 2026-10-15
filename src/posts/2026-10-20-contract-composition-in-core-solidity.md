@@ -165,6 +165,7 @@ Reuse is expressed with four ingredients that are already in the language:
 
 Like everything in the prototype, the syntax below is provisional and may change before release.
 The code is taken from a [runnable example in the playground](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition), which type-checks and compiles to executable code today.
+The snippets in this post are shortened, and the full examples are linked at the end.
 
 ### The example: vaults that vary along two axes
 
