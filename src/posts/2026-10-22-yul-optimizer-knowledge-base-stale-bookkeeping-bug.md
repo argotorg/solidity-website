@@ -1,0 +1,185 @@
+---
+layout: post
+published: true
+title: "Yul Optimizer Knowledge Base Stale Bookkeeping Bug"
+date: "2026-10-22"
+author: Solidity Team
+category: Security Alerts
+---
+
+[//]: # "TODO: double-check the publication date (2026-10-22) in the front matter, the file name, and the link in docs/bugs.json of the compiler repo."
+
+On August 17, 2026, [Surya Prakash Akula](https://github.com/D4r3-D3v1L) reported a bug in the Yul optimizer through the Ethereum Foundation's bug bounty program.
+Because of the bug, the optimizer can consider two memory or storage locations distinct even though they coincide at runtime.
+As a result, a load can be replaced with an outdated value, or a store that is needed can be removed.
+A second report by [Daniel Boye](https://github.com/DanielBoye), received on September 28, 2026, showed that the bug can be triggered from plain Solidity code, without any inline assembly.
+
+We assign this bug a severity of _low_ on our internal scale.
+Only code compiled with the Yul optimizer enabled is affected.
+With `--via-ir` (`settings.viaIR` in Standard JSON), any code may be affected, including code without inline assembly.
+The same applies to Yul compiled directly with `--strict-assembly` (`"language": "Yul"` in Standard JSON).
+With the default evmasm pipeline, only compiler-generated Yul utility functions and inline assembly blocks that do not refer to any Solidity variables or functions may be affected.
+
+The bug was introduced in Solidity 0.8.19.
+All versions from 0.8.19 through 0.8.37 are affected.
+The bug is fixed in Solidity 0.8.38.
+
+We scanned the [Sourcify](https://sourcify.dev/) database with a development build of the compiler, once with and once without the fix.
+This covered roughly 283,000 verified compilations with `--via-ir` and 607,000 with the evmasm pipeline.
+None of them produced different bytecode, so no contract verified on Sourcify is known to be affected.
+
+## Which Contracts Are Affected?
+
+A contract is only affected if **all** of the following conditions are met:
+
+1. The Yul optimizer is enabled.
+   This is the case with `--optimize` or `--optimize-yul` (`settings.optimizer.enabled` or `settings.optimizer.details.yul` in Standard JSON).
+2. The optimizer step sequence contains `LoadResolver` (`L`) or `EqualStoreEliminator` (`E`).
+   The default sequence contains both.
+3. The code is compiled with `--via-ir` or `--strict-assembly`.
+   With the evmasm pipeline, only compiler-generated Yul utility functions and inline assembly blocks that do not refer to any Solidity variables or functions can be affected.
+4. In the intermediate code the optimizer works on, a variable used to compute memory or storage addresses is reassigned.
+   One address is derived from its value before the reassignment and another from its value after it, using different constant offsets.
+5. At runtime, the two addresses point to the same location.
+
+Condition 4 cannot be checked on the Solidity source.
+The intermediate code depends on the compiler version, the optimizer sequence, and the surrounding code.
+The bug therefore cannot be reliably ruled in or out by inspecting the source.
+All reproducers we know of that use the default optimizer sequence follow the same pattern.
+A local variable used to compute addresses is modified in a loop or branch, both before and after the first address is derived from it.
+A different value is then stored to the same location through an address derived from the new value.
+
+The target EVM version does not affect whether the bug manifests.
+
+**If your contract is compiled with the Yul optimizer disabled, it is not affected.**
+
+## Technical Details
+
+This section describes the compiler internals behind the bug for readers interested in the implementation-level root cause.
+
+### Tracking memory and storage contents
+
+`LoadResolver` replaces `mload`, `sload`, and `keccak256` calls with values it already knows.
+For example, it can reuse the value written by an earlier store to the same location.
+`EqualStoreEliminator` removes stores of a value that the location is already known to contain.
+Both rely on the same bookkeeping of the known contents of memory and storage.
+
+Sometimes the optimizer cannot determine exactly which location a store writes to.
+It then has to forget what it knows about every location the store might overwrite.
+To decide which locations those are, it consults the `KnowledgeBase`, a component that answers questions about relations between variables.
+
+### Addresses as offsets from a base variable
+
+The `KnowledgeBase` represents a variable symbolically as a constant offset from a base variable.
+If the value of the variable is a constant, the base is zero.
+If the value is unknown or cannot be expressed as a constant offset, the variable is its own base with offset zero.
+Almost all addresses have the form `base + constant`.
+For example, after `let base := calldataload(0)` and `let ptr := add(base, 2)`, `base` is its own base and `ptr` is represented as `base + 2`.
+
+Two addresses with the same base are known to be distinct if their offsets differ (for storage) or are at least 32 bytes apart (for memory).
+The optimizer then keeps what it knows about one of the two locations across a store to the other.
+
+These representations are cached per variable.
+The cache was introduced in Solidity 0.8.19 with a reimplementation of the `KnowledgeBase`.
+Before that, the `KnowledgeBase` computed offsets on the fly from the current values of the variables.
+
+### Stale cache entries
+
+In SSA form, every variable is assigned exactly once, so a cached representation never goes out of date.
+The optimizer does not always operate on strict SSA form, however.
+Even after its SSA transform, variables assigned in branches or loops are still reassigned.
+In such code, a base variable can be reassigned while variables computed from its old value keep their cached representation.
+
+The cache was invalidated lazily.
+Whenever the `KnowledgeBase` looked up a variable, it compared the variable's current value expression with the one it had seen last time.
+If the two differed, it reset the cached entry.
+This check could miss a reassignment in two ways:
+
+- The value of the variable could be unknown both before and after the reassignment.
+  This happens, for example, when it was assigned in a branch or loop and control flow had since joined.
+  There was then no expression to compare, and no reset happened.
+- The reset only happened when the reassigned variable itself was looked up.
+  By then, the optimizer could already have retrieved the cached representation of an address derived from it, for the same comparison.
+
+In both cases, the optimizer compared two addresses as if they used the same base.
+In fact, one was derived from the old value of the base and the other from the new value.
+It concluded that the two locations were distinct and kept what it knew about one of them across a store to the other.
+If the two locations coincided at runtime, a later load from the first location was replaced with the outdated value.
+Similarly, a later store of the outdated value to that location could be removed.
+A `keccak256` over the location could be replaced with the hash of outdated data.
+
+## Example
+
+The following contract demonstrates the bug without any inline assembly.
+It is affected when compiled with `--via-ir` and the optimizer enabled.
+
+```solidity
+contract C {
+    struct S { uint256 v; }
+    S[20] public a;
+
+    function g(uint256 n1, uint256 n2, uint256 v, uint256 w) external returns (uint256) {
+        uint256 i;
+        for (uint256 j; j < n1; j++) i++;
+        uint256 k = i + 2;
+        a[k].v = v;
+        for (uint256 j; j < n2; j++) i++;
+        a[i].v = w;
+        return a[k].v;
+    }
+}
+```
+
+`a` occupies storage slots 0 to 19, and since `S` has a single member, `a[x].v` is stored in slot `x`.
+For `g(0, 2, 0xaaaa, 0xbbbb)`, the first loop does not run, so `k = 2`, and `0xaaaa` is written to `a[2].v`.
+The second loop runs twice, so `i = 2`, and `0xbbbb` is written to the same location.
+So `g` should return `0xbbbb`.
+
+**Observed behavior:**
+
+```solidity
+C target = new C();
+target.g(0, 2, 0xaaaa, 0xbbbb);
+// expected: 0xbbbb
+// actual:   0xaaaa
+```
+
+The slot of `a[k].v` is derived from `i` before the second loop, and the slot of `a[i].v` from `i` after it.
+The value of `i` is unknown at both points, so the optimizer treats `i` as its own base and represents the two slots as `i + 2` and `i`.
+It concludes that they are two slots apart and keeps the known contents of `a[k].v` across the store to `a[i].v`.
+The final load from `a[k].v` is then replaced with `v`, and the function returns `0xaaaa`.
+
+## Severity Assessment
+
+The compiler emits no warning, and the generated code does not revert at runtime.
+When the bug is triggered, a load returns an outdated value or a write to memory or storage is lost.
+
+In practice the likelihood is low.
+The conditions on the intermediate code are fragile, and the two affected locations also have to coincide at runtime.
+When the addresses are computed from call arguments, however, a caller may be able to choose inputs that make them coincide.
+
+The [Sourcify](https://sourcify.dev/) scan found no affected contract.
+It compared bytecode produced by a development build of the compiler with and without the fix.
+It did not use the compiler versions that the contracts were originally compiled with.
+Since the optimizer steps that run before the affected ones have changed between versions, the result is an indication rather than a guarantee.
+
+## The Fix
+
+The fix replaces the lazy invalidation with explicit versioning of variables.
+Every variable in the `KnowledgeBase` now carries a version, which is incremented whenever the optimizer records a change to the variable's value.
+Cached representations are stored per variable and version.
+After a reassignment, the variable is treated as a new one, so existing cache entries never go stale.
+
+## Recommended Actions
+
+- Upgrade to Solidity 0.8.38 or later before deploying contracts compiled with the Yul optimizer enabled.
+- If you have already deployed contracts compiled with the Yul optimizer enabled, there is no simple check that rules the bug out.
+  Pay particular attention to variables used to compute memory or storage addresses, such as array indices.
+  This matters most when such a variable is modified in a loop or branch both before and after an address is derived from it.
+  Running your test suite with and without the Yul optimizer can expose the bug.
+  This only works if the tests cover inputs for which the affected locations coincide.
+
+## Acknowledgements
+
+We would like to thank [Surya Prakash Akula](https://github.com/D4r3-D3v1L) for reporting the bug through the Ethereum Foundation's bug bounty program.
+We would also like to thank [Daniel Boye](https://github.com/DanielBoye) for the second report, which showed that the bug is reachable from plain Solidity code.
