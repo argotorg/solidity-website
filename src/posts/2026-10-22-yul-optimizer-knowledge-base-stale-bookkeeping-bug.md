@@ -82,6 +82,7 @@ Before that, the `KnowledgeBase` computed offsets on the fly from the current va
 
 ### Stale cache entries
 
+A cached entry becomes outdated when the value of its variable changes.
 The cache was invalidated lazily.
 Whenever the `KnowledgeBase` looked up a variable, it compared the variable's current value expression with the one it had seen last time.
 If the two differed, it reset the cached entry.
@@ -93,7 +94,7 @@ This check could miss a reassignment in two ways:
 - The reset only happened when the reassigned variable itself was looked up.
   By then, the optimizer could already have retrieved the cached representation of an address derived from it, for the same comparison.
 
-In both cases, the two addresses were represented as offsets from the same base variable.
+In both cases, two addresses were represented as offsets from the same base variable.
 However, one was derived from the base's value before the reassignment and the other from its value after it.
 The optimizer treated both offsets as relative to one and the same value.
 It concluded that the two locations were distinct and kept what it knew about one of them across a store to the other.
@@ -124,7 +125,7 @@ contract C {
 ```
 
 `a` is a static array whose data starts at storage slot 0.
-Since `S` has a single member, `a[i].v` is stored `i` slots after the start of the array, which here is slot `i`.
+Since `S` has a single member, every element occupies one slot, so the slot of an element equals its index.
 For `g(0, 2, 0xaaaa, 0xbbbb)`, the first loop does not run, so `k = 2`, and `0xaaaa` is written to `a[2].v`.
 The second loop runs twice, so `i = 2`, and `0xbbbb` is written to the same location.
 So `g` should return `0xbbbb`.
@@ -141,7 +142,7 @@ target.g(0, 2, 0xaaaa, 0xbbbb);
 The slot of `a[k].v` is derived from `i` before the second loop, and the slot of `a[i].v` from `i` after it.
 The value of `i` is unknown at both points, so the optimizer treats `i` as its own base and represents the two slots as `i + 2` and `i`.
 It concludes that they are two slots apart and keeps the known contents of `a[k].v` across the store to `a[i].v`.
-The final load from `a[k].v` is then replaced with `v`, and the function returns `0xaaaa`.
+The final load from `a[k].v` is then replaced with the parameter `v`, and the function returns `0xaaaa`.
 
 ## Severity Assessment
 
@@ -167,7 +168,7 @@ After a reassignment, the variable is treated as a new one, so existing cache en
 ## Recommended Actions
 
 - Upgrade to Solidity 0.8.38 or later before deploying contracts compiled with the Yul optimizer enabled.
-- For contracts already deployed from versions 0.8.19 to 0.8.37 with the Yul optimizer enabled, the following checks are available, in increasing order of effort.
+- For deployed contracts compiled with versions 0.8.19 to 0.8.37 and the Yul optimizer enabled, the following checks are available, in increasing order of effort.
   1. **Compare bytecode produced with and without the fix.**
      The nightly builds `0.8.38-nightly.2026.10.13+commit.ce5702db` (without the fix) and `0.8.38-nightly.2026.10.14+commit.8bff1c3a` (with the fix) are available from [binaries.soliditylang.org](https://binaries.soliditylang.org/).
      They were built from the commits [`ce5702db`](https://github.com/argotorg/solidity/commit/ce5702dbdd57d9577154e09ab73b639bccaa8605) and [`8bff1c3a`](https://github.com/argotorg/solidity/commit/8bff1c3a7c62057c3ca1d6a926a7277d7163dec6).
@@ -178,7 +179,7 @@ After a reassignment, the variable is treated as a new one, so existing cache en
      Compile with the same compiler version you deployed with, but remove every `L` and `E` from that version's default optimizer step sequence (see the [optimizer documentation](https://docs.soliditylang.org/en/latest/internals/optimizer.html#selecting-optimizations)).
      Without these two steps, the bug cannot occur.
      Unlike a fully unoptimized build, this build is unlikely to fail with "Stack too deep".
-     Run your test suite against both builds.
+     Run your test suite against this build and against your original build.
      A difference in results indicates the bug.
      The comparison can only reveal it for inputs under which the two locations coincide, however, so it cannot rule the bug out.
   3. **Check the exact compiler version you deployed with.**
