@@ -170,9 +170,12 @@ After a reassignment, the variable is treated as a new one, so existing cache en
 - Upgrade to Solidity 0.8.38 or later before deploying contracts compiled with the Yul optimizer enabled.
 - For deployed contracts compiled with versions 0.8.19 to 0.8.37 and the Yul optimizer enabled, the following checks are available, in increasing order of effort.
   1. **Compare bytecode produced with and without the fix.**
-     The nightly builds `0.8.38-nightly.2026.10.13+commit.ce5702db` (without the fix) and `0.8.38-nightly.2026.10.14+commit.8bff1c3a` (with the fix) are available from [binaries.soliditylang.org](https://binaries.soliditylang.org/).
-     They were built from the commits [`ce5702db`](https://github.com/argotorg/solidity/commit/ce5702dbdd57d9577154e09ab73b639bccaa8605) and [`8bff1c3a`](https://github.com/argotorg/solidity/commit/8bff1c3a7c62057c3ca1d6a926a7277d7163dec6).
-     If both produce identical bytecode for your sources and settings, ignoring the metadata hash, the fix did not change anything for your code.
+     [Build the compiler from source](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source) at commit [`ce5702db`](https://github.com/argotorg/solidity/commit/ce5702dbdd57d9577154e09ab73b639bccaa8605), the last commit before the fix, and at commit [`00d5ee65`](https://github.com/argotorg/solidity/commit/00d5ee65698ccc9eeeeb6b1c29f9fe694c869139), which merged the fix.
+     Compile your sources with both builds and the settings you deployed with.
+     If both produce identical bytecode, ignoring the metadata hash, the fix did not change anything for your code.
+     The closest ready-made builds are the nightly builds `0.8.38-nightly.2026.10.13+commit.ce5702db` and `0.8.38-nightly.2026.10.14+commit.8bff1c3a` on [binaries.soliditylang.org](https://binaries.soliditylang.org/).
+     They are only available as Emscripten builds (`soljson.js`).
+     Builds for other platforms can be obtained from our CI.
      As with our Sourcify scan, this uses the current optimizer rather than the version you deployed with.
      A match is therefore a strong indication rather than a guarantee, and a difference is a reason to investigate rather than proof of a problem.
   2. **Compare against a build that cannot trigger the bug.**
