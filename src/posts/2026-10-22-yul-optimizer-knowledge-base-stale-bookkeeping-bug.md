@@ -12,7 +12,7 @@ category: Security Alerts
 On August 17, 2026, [Daniel Boye](https://github.com/DanielBoye) reported a bug in the Yul optimizer through the Ethereum Foundation's bug bounty program.
 Because of the bug, the optimizer can consider two memory or storage locations distinct even though they coincide at runtime.
 As a result, a load can be replaced with an outdated value, or a store that is needed can be removed.
-A second report by [Surya Prakash Akula](https://github.com/D4r3-D3v1L), received on September 28, 2026, showed that the bug can be triggered from plain Solidity code, without any inline assembly.
+A second report by [Surya Prakash Akula](https://x.com/d4r3_d3v1l_), received on September 28, 2026, showed that the bug can be triggered from plain Solidity code, without any inline assembly.
 
 We assign this bug a severity of _low_ on our internal scale.
 Only code compiled with the Yul optimizer enabled is affected.
@@ -195,4 +195,4 @@ After a reassignment, the variable is treated as a new one, so existing cache en
 ## Acknowledgements
 
 We would like to thank [Daniel Boye](https://github.com/DanielBoye) for reporting the bug through the Ethereum Foundation's bug bounty program.
-We would also like to thank [Surya Prakash Akula](https://github.com/D4r3-D3v1L) for the second report, which showed that the bug is reachable from plain Solidity code.
+We would also like to thank [Surya Prakash Akula](https://x.com/d4r3_d3v1l_) for the second report, which showed that the bug is reachable from plain Solidity code.
