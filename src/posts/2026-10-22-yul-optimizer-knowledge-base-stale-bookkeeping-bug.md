@@ -37,12 +37,12 @@ A contract is only affected if **all** of the following conditions are met:
    This is the case with `--optimize` or `--optimize-yul` (`settings.optimizer.enabled` or `settings.optimizer.details.yul` in Standard JSON).
 2. The optimizer step sequence contains `LoadResolver` (`L`) or `EqualStoreEliminator` (`E`).
    The default sequence contains both.
-3. In the intermediate code that is the input to the `LoadResolver` and `EqualStoreEliminator` steps, a variable used to compute memory or storage addresses is reassigned.
+3. In the intermediate Yul code that is the input to the `LoadResolver` and `EqualStoreEliminator` steps, a variable used to compute memory or storage addresses is reassigned.
    One address is derived from its value before the reassignment and another from its value after it, using different constant offsets.
 4. At runtime, the two addresses point to the same location.
 
-Conditions 3 and 4 cannot be reliably checked based on the source code alone.
-In particular, the intermediate code that feeds into the affected optimizer steps depends on the compiler version, the optimizer sequence, and the surrounding code.
+Conditions 3 and 4 cannot be reliably checked based on the Solidity or Yul source code alone.
+In particular, the intermediate Yul code that feeds into the affected optimizer steps depends on the compiler version, the optimizer sequence, and the surrounding code.
 All reproducers we know of that use the default optimizer sequence follow the same pattern.
 A local variable used to compute addresses is modified in a loop or branch, both before and after the first address is derived from it.
 A different value is then stored to the same location through an address derived from the new value.
@@ -54,6 +54,7 @@ The target EVM version does not affect whether the bug manifests.
 ## Technical Details
 
 This section describes the compiler internals behind the bug for readers interested in the implementation-level root cause.
+The Yul optimizer works on Yul code, so all variables in this section are Yul variables.
 
 ### Tracking memory and storage contents
 
@@ -70,7 +71,7 @@ To decide which locations those are, it consults the `KnowledgeBase`, a componen
 
 The `KnowledgeBase` represents a variable symbolically as a constant offset from a base variable.
 If the value of the variable is a constant, the base is zero.
-If the value is unknown or cannot be expressed as a constant offset, the variable is its own base with offset zero.
+If the value cannot be expressed as a constant offset, it is treated as unknown, and the variable is its own base with offset zero.
 For example, after `let base := calldataload(0)` and `let ptr := add(base, 2)`, `base` is its own base and `ptr` is represented as `base + 2`.
 
 Two addresses with the same base are known to be distinct if their offsets differ (for storage) or are at least 32 bytes apart (for memory).
@@ -82,14 +83,17 @@ Before that, the `KnowledgeBase` computed offsets on the fly from the current va
 
 ### Stale cache entries
 
+Treating a value as unknown is always safe, because it only limits the optimizations that can be applied.
+Relying on an outdated value, in contrast, can lead to incorrect code.
 A cached entry becomes outdated when the value of its variable changes.
 The cache was invalidated lazily.
 Whenever the `KnowledgeBase` looked up a variable, it compared the variable's current value expression with the one it had seen last time.
 If the two differed, it reset the cached entry.
 This check could miss a reassignment in two ways:
 
-- The value of the variable could be unknown both before and after the reassignment.
-  This happens, for example, when it was assigned in a branch or loop and control flow had since joined.
+- The variable could have no tracked value both before and after the reassignment.
+  This happens, for example, when it was assigned together with other variables, as in `x, y := f()`.
+  It also happens when it was assigned in a branch or loop and control flow had since joined.
   There was then no expression to compare, and no reset happened.
 - The reset only happened when the reassigned variable itself was looked up.
   By then, the optimizer could already have retrieved the cached representation of an address derived from it, for the same comparison.
@@ -125,7 +129,7 @@ contract C {
 ```
 
 `a` is a static array whose data starts at storage slot 0.
-Since `S` has a single member, every element occupies one slot, so the slot of an element equals its index.
+Since `S` has a single value type member, every element occupies one slot, so the slot of an element equals its index.
 For `g(0, 2, 0xaaaa, 0xbbbb)`, the first loop does not run, so `k = 2`, and `0xaaaa` is written to `a[2].v`.
 The second loop runs twice, so `i = 2`, and `0xbbbb` is written to the same location.
 So `g` should return `0xbbbb`.
@@ -139,8 +143,8 @@ target.g(0, 2, 0xaaaa, 0xbbbb);
 // actual:   0xaaaa
 ```
 
-The slot of `a[k].v` is derived from `i` before the second loop, and the slot of `a[i].v` from `i` after it.
-The value of `i` is unknown at both points, so the optimizer treats `i` as its own base and represents the two slots as `i + 2` and `i`.
+In the generated Yul code, the slot of `a[k].v` is derived from `i` before the second loop, and the slot of `a[i].v` from `i` after it.
+At both points, the optimizer tracks no value for `i`, so it treats `i` as its own base and represents the two slots as `i + 2` and `i`.
 It concludes that they are two slots apart and keeps the known contents of `a[k].v` across the store to `a[i].v`.
 The final load from `a[k].v` is then replaced with the parameter `v`, and the function returns `0xaaaa`.
 
@@ -150,7 +154,7 @@ The compiler emits no warning, and the generated code does not necessarily rever
 When the bug is triggered, a load returns an outdated value or a write to memory or storage is lost.
 
 In practice the likelihood is very low.
-The conditions on the intermediate code are fragile, and the two affected locations also have to coincide at runtime.
+The conditions on the intermediate Yul code are fragile, and the two affected locations also have to coincide at runtime.
 When the addresses are computed from call arguments, however, a caller may be able to choose inputs that make them coincide.
 
 The [Sourcify](https://sourcify.dev/) scan found no indication of affected contracts.
