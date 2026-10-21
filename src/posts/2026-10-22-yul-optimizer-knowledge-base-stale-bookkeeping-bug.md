@@ -195,4 +195,4 @@ After a reassignment, the variable is treated as a new one, so existing cache en
 ## Acknowledgements
 
 We would like to thank [Daniel Boye](https://github.com/DanielBoye) for reporting the bug through the Ethereum Foundation's bug bounty program.
-We would also like to thank [Surya Prakash Akula](https://x.com/d4r3_d3v1l_) for the second report, which showed that the bug is reachable from plain Solidity code.
+We would also like to thank [Surya Prakash Akula](https://x.com/d4r3_d3v1l_) for the second report through the Ethereum Foundation's bug bounty program, which showed that the bug is reachable from plain Solidity code.
