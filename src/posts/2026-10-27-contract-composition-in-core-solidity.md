@@ -2,7 +2,7 @@
 layout: post
 published: true
 title: 'Contract Composition in Core Solidity'
-date: '2026-10-20'
+date: '2026-10-27'
 author: Solidity Team
 category: Announcements
 ---
@@ -18,8 +18,11 @@ The rule that computes it, called C3 linearization, can produce results that are
 
 Core Solidity takes a different approach.
 As [announced in our deep dive](https://soliditylang.org/blog/2025/11/14/core-solidity-deep-dive/), we are removing inheritance from the language entirely.
-Code reuse is expressed instead through traits, generics, values, and modules that own their state.
-This post shows what that costs and what it gains, using two small examples.
+This post shows one way to reuse code without it, using traits, generics, values, and modules that own their state.
+It is not the only possible design, and we are actively exploring alternatives.
+If you have any ideas, we would like to hear them.
+
+We look at what this approach costs and what it gains, using two small examples.
 The first is a family of vaults that combine different _behaviors_ for two independent choices.
 The second is an ERC20 token built from separate `Ownable`, `Pausable`, and supply-cap modules, each with its own _state_.
 This is a common use of inheritance in Classic Solidity, built here without any base contracts.
@@ -164,7 +167,7 @@ This work is tedious and error-prone, and it grows with the number of contracts 
 
 Core Solidity still lets you share behavior across contracts, but without inheritance.
 There is no `virtual`, no `override`, no `super`, and no linearization.
-Reuse is expressed with four features that are already in the language:
+The approach in this post uses four features that are already in the language:
 
 - **Traits** (type classes) declare an interface that many types can implement.
 - **Generics** let a function be written once and reused for every type that satisfies a trait.
@@ -352,7 +355,7 @@ The linearization decides the storage layout of all four bases, as well as the o
 Each base's initializer also has to run in that order, or a later read sees zero.
 OpenZeppelin uses [ERC-7201 namespaced storage](https://eips.ethereum.org/EIPS/eip-7201) for its upgradeable contracts.
 
-Core Solidity builds the same token from self-contained modules.
+With this approach, the same token is built from self-contained modules.
 Each module keeps its storage in an ERC-7201 namespaced slot.
 Modules that need to run on every transfer also provide a `TransferHook` implementation.
 Here is the complete ownership module, a single slot and the functions that use it:
@@ -490,7 +493,7 @@ There is a bit more code to write, and the compiler does not lay out storage acr
 
 In return, each connection is written where it is used.
 Inheritance ties together code reuse, storage layout, and dispatch, and controls all three with the same `is` clause.
-Core Solidity separates them.
+The approach in this post separates them.
 Behavior is a trait implemented once per type, composition is a value applied in the order you write it, and shared state lives in modules with namespaced slots.
 As a result, both dispatch and storage layout can be understood from the file you are reading.
 
@@ -500,9 +503,10 @@ The examples also take shortcuts that production code should not.
 The vaults credit balances without actually receiving tokens, and the signed digest does not include a nonce, the chain ID, or the vault address.
 `BasisFee` can also overflow for very large amounts, because `uint256` arithmetic in the standard library is not checked yet.
 The token does not implement approvals.
-The composition mechanism itself, using traits, generics, values, and modules that own their state, is the one we plan to ship.
+This is one possible approach to composition in Core Solidity, not a final design.
 
 You can try both examples in the [online playground](https://playground.solcore.soliditylang.org/).
 The full source is also available on GitHub: the [fee-policy vaults](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition) and the [stateful token extensions](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/extensions).
 The playground runs on [solcore-rs](https://github.com/argotorg/solcore-rs), a Rust implementation of the [Core Solidity prototype](https://github.com/argotorg/solcore).
-We are looking forward to your feedback.
+We are open to suggestions and other ideas for how composition should work in Core Solidity.
+Please share them in the [forum thread on contract composition](https://forum.soliditylang.org/t/request-for-comments-contract-composition-in-core-solidity/3734).
