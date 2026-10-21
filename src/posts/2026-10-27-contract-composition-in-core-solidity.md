@@ -159,7 +159,7 @@ The compiler does not warn about this.
 All three examples use ordinary code.
 No contract refers to its siblings, and the functions only touch ordinary state.
 The behavior depends on _the whole program_, not on any single file you can read.
-This is what makes inheritance-heavy contracts expensive to audit.
+This often makes inheritance-heavy contracts difficult and expensive to audit.
 Reviewers have to work out the linearization of each deployed contract by hand, and check that no `super` chain reaches an unrelated contract and that no constructor calls an override too early.
 This work is tedious and error-prone, and it grows with the number of contracts and bases in a codebase.
 
@@ -175,7 +175,7 @@ The approach in this post uses four features that are already in the language:
 - **Modules** own their state in their own storage namespace.
 
 Like everything in the prototype, the syntax below is provisional and may change before release.
-The code is taken from a [runnable example in the playground](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition), which type-checks and compiles to executable code today.
+The code is taken from a [runnable example in the playground](https://playground.solcore.soliditylang.org/#/examples/composition), which type-checks and compiles to executable code today.
 The snippets in this post are shortened, and the full examples are linked at the end.
 
 ### The example: vaults with two independent choices
@@ -505,7 +505,7 @@ The vaults credit balances without actually receiving tokens, and the signed dig
 The token does not implement approvals.
 This is one possible approach to composition in Core Solidity, not a final design.
 
-You can try both examples in the [online playground](https://playground.solcore.soliditylang.org/).
+You can try the [fee-policy vaults](https://playground.solcore.soliditylang.org/#/examples/composition) and the [stateful token extensions](https://playground.solcore.soliditylang.org/#/examples/extensions) in the online playground.
 The full source is also available on GitHub: the [fee-policy vaults](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition) and the [stateful token extensions](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/extensions).
 The playground runs on [solcore-rs](https://github.com/argotorg/solcore-rs), a Rust implementation of the [Core Solidity prototype](https://github.com/argotorg/solcore).
 We are open to suggestions and other ideas for how composition should work in Core Solidity.
