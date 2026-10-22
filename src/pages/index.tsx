@@ -115,12 +115,12 @@ export default function Home({
               <Box>
                 <Text lineHeight="180%" fontSize="md" mb={4}>
                   <Link
-                    href="/blog/2026/09/10/solidity-0.8.37-release-announcement/"
+                    href="/blog/2026/10/22/solidity-0.8.38-release-announcement/"
                     fontWeight="bold"
                   >
-                   We just released the Solidity Compiler v0.8.37.
+                   We just released the Solidity Compiler v0.8.38.
                   </Link>{' '}
-                  This release fixes several important bugs, adds support for block.slotnum from the Amsterdam EVM version, and replaces the stack shuffler in our experimental SSA CFG pipeline with a planning one.
+                  This release fixes a low-severity bug in the Yul optimizer, makes compilation with the Yul optimizer faster, and warns about identifiers in Yul and inline assembly that are going to be reserved starting from the Amsterdam EVM version.
                 </Text>
               </Box>
             </Flex>
