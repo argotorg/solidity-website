@@ -7,8 +7,6 @@ author: Solidity Team
 category: Security Alerts
 ---
 
-[//]: # "TODO: double-check the publication date (2026-10-22) in the front matter, the file name, and the link in docs/bugs.json of the compiler repo."
-
 On August 17, 2026, [Daniel Boye](https://github.com/DanielBoye) reported a bug in the Yul optimizer through the Ethereum Foundation's bug bounty program.
 Because of the bug, the optimizer can consider two memory or storage locations distinct even though they coincide at runtime.
 As a result, a load can be replaced with an outdated value, or a store that is needed can be removed.
