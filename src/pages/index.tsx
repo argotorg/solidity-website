@@ -120,7 +120,7 @@ export default function Home({
                   >
                    We just released the Solidity Compiler v0.8.38.
                   </Link>{' '}
-                  This release fixes a low-severity bug in the Yul optimizer, makes compilation with the Yul optimizer faster, and warns about Yul identifiers that are going to be reserved starting from the Amsterdam EVM version.
+                  This release fixes a low-severity bug in the Yul optimizer, makes compilation with the Yul optimizer faster, and warns about identifiers in Yul and inline assembly that are going to be reserved starting from the Amsterdam EVM version.
                 </Text>
               </Box>
             </Flex>
