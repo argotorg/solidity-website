@@ -24,7 +24,7 @@ The bug was introduced in Solidity 0.8.19.
 All versions from 0.8.19 through 0.8.37 are affected.
 The bug is fixed in Solidity 0.8.38.
 
-We scanned the [Sourcify](https://sourcify.dev/) database with a development build of the compiler, once with and once without the fix.
+We scanned the [Sourcify](https://sourcify.dev/) database, rebuilding contracts with a development build of the compiler, once with and once without the fix.
 This covered roughly 283,000 verified compilations with `--via-ir` and 607,000 with the evmasm pipeline.
 None of them produced different bytecode.
 This gives us confidence that the bug is very rare, but it does not rule out that a contract is affected.
@@ -58,7 +58,7 @@ The Yul optimizer works on Yul code, so all variables in this section are Yul va
 
 ### Tracking memory and storage contents
 
-`LoadResolver` replaces `mload`, `sload`, and `keccak256` calls with values it already knows.
+`LoadResolver` replaces `mload`, `sload`, and `keccak256` instructions with values it already knows.
 For example, it can reuse the value written by an earlier store to the same location.
 `EqualStoreEliminator` removes stores of a value that the location is already known to contain.
 Both rely on the same bookkeeping of the known contents of memory and storage.
@@ -97,6 +97,7 @@ This check could miss a reassignment in two ways:
   There was then no expression to compare, and no reset happened.
 - The reset only happened when the reassigned variable itself was looked up.
   By then, the optimizer could already have retrieved the cached representation of an address derived from it, for the same comparison.
+  The compiler test [`reassigned_offset_base.yul`](https://github.com/argotorg/solidity/blob/v0.8.38/test/libyul/yulOptimizerTests/loadResolver/reassigned_offset_base.yul) shows this case.
 
 In both cases, two addresses were represented as offsets from the same base variable.
 However, one was derived from the base's value before the reassignment and the other from its value after it.
@@ -116,13 +117,13 @@ contract C {
     struct S { uint256 v; }
     S[20] public a;
 
-    function g(uint256 n1, uint256 n2, uint256 v, uint256 w) external returns (uint256) {
+    function g(uint256 max1, uint256 max2, uint256 aaaa, uint256 bbbb) external returns (uint256) {
         uint256 i;
-        for (uint256 j; j < n1; j++) i++;
+        for (uint256 j; j < max1; j++) i++;
         uint256 k = i + 2;
-        a[k].v = v;
-        for (uint256 j; j < n2; j++) i++;
-        a[i].v = w;
+        a[k].v = aaaa;
+        for (uint256 j; j < max2; j++) i++;
+        a[i].v = bbbb;
         return a[k].v;
     }
 }
@@ -145,8 +146,9 @@ target.g(0, 2, 0xaaaa, 0xbbbb);
 
 In the generated Yul code, the slot of `a[k].v` is derived from `i` before the second loop, and the slot of `a[i].v` from `i` after it.
 At both points, the optimizer tracks no value for `i`, so it treats `i` as its own base and represents the two slots as `i + 2` and `i`.
-It concludes that they are two slots apart and keeps the known contents of `a[k].v` across the store to `a[i].v`.
-The final load from `a[k].v` is then replaced with the parameter `v`, and the function returns `0xaaaa`.
+The `KnowledgeBase` does not record that these refer to the values of `i` at different points in the program.
+It wrongly concludes that the writes must be two slots apart and that the store to `a[i].v` cannot overwrite the contents of `a[k].v`.
+The final load from `a[k].v` is then replaced with the parameter `aaaa`, and the function returns `0xaaaa`.
 
 ## Severity Assessment
 
@@ -172,29 +174,30 @@ After a reassignment, the variable is treated as a new one, so existing cache en
 ## Recommended Actions
 
 - Upgrade to Solidity 0.8.38 or later before deploying contracts compiled with the Yul optimizer enabled.
-- For deployed contracts compiled with versions 0.8.19 to 0.8.37 and the Yul optimizer enabled, the following checks are available, in increasing order of effort.
+- For deployed contracts compiled with versions 0.8.19 to 0.8.37 and the Yul optimizer enabled, the following checks are available.
   1. **Compare bytecode produced with and without the fix.**
-     [Build the compiler from source](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source) at commit [`ce5702db`](https://github.com/argotorg/solidity/commit/ce5702dbdd57d9577154e09ab73b639bccaa8605), the last commit before the fix, and at commit [`00d5ee65`](https://github.com/argotorg/solidity/commit/00d5ee65698ccc9eeeeb6b1c29f9fe694c869139), which merged the fix.
+     [Build the compiler from source](https://docs.soliditylang.org/en/v0.8.38/installing-solidity.html#building-from-source) at commit [`ce5702db`](https://github.com/argotorg/solidity/commit/ce5702dbdd57d9577154e09ab73b639bccaa8605), the last commit before the fix, and at commit [`00d5ee65`](https://github.com/argotorg/solidity/commit/00d5ee65698ccc9eeeeb6b1c29f9fe694c869139), which merged the fix.
      Compile your sources with both builds and the settings you deployed with.
      If both produce identical bytecode, ignoring the metadata hash, the fix did not change anything for your code.
      The closest ready-made builds are the nightly builds `0.8.38-nightly.2026.10.13+commit.ce5702db` and `0.8.38-nightly.2026.10.14+commit.8bff1c3a` on [binaries.soliditylang.org](https://binaries.soliditylang.org/).
-     They are only available as Emscripten builds (`soljson.js`).
-     Builds for other platforms can be obtained from our CI.
-     As with our Sourcify scan, this uses the current optimizer rather than the version you deployed with.
+     They are only available as Emscripten builds (`soljson.js` in the `bin/` subdirectory).
+     As with our Sourcify scan, this comparison uses the current optimizer rather than the version you deployed with.
      A match is therefore a strong indication rather than a guarantee, and a difference is a reason to investigate rather than proof of a problem.
-  2. **Compare against a build that cannot trigger the bug.**
-     Compile with the same compiler version you deployed with, but remove every `L` and `E` from that version's default optimizer step sequence (see the [optimizer documentation](https://docs.soliditylang.org/en/latest/internals/optimizer.html#selecting-optimizations)).
+  2. **Compare behavior against a build that cannot trigger the bug.**
+     Compile with the same compiler version you deployed with, but remove every `L` and `E` from that version's default optimizer step sequence (see the [optimizer documentation](https://docs.soliditylang.org/en/v0.8.38/internals/optimizer.html#selecting-optimizations)).
      Without these two steps, the bug cannot occur.
      Unlike a fully unoptimized build, this build is unlikely to fail with "Stack too deep".
      Run your test suite against this build and against your original build.
      A difference in results indicates the bug.
      The comparison can only reveal it for inputs under which the two locations coincide, however, so it cannot rule the bug out.
-  3. **Check the exact compiler version you deployed with.**
+  3. **Compare bytecode produced by the exact compiler version you deployed with.**
      For a definitive answer, apply the fix to the release you deployed with and compare the bytecode it produces against the release build, ignoring the metadata hash.
      The fix ([argotorg/solidity#17116](https://github.com/argotorg/solidity/pull/17116)) is confined to `libyul/optimiser/KnowledgeBase.h`, `libyul/optimiser/KnowledgeBase.cpp`, `libyul/optimiser/DataFlowAnalyzer.h` and `libyul/optimiser/DataFlowAnalyzer.cpp`.
      Identical bytecode means the deployed code is not affected.
-     Alternatively, a symbolic equivalence checker such as [hevm](https://hevm.dev/) can compare the deployed bytecode against the build from check 2.
-     It covers all inputs rather than only those exercised by tests, but it may not scale to large contracts.
+     A difference in bytecode, however, does not necessarily mean that the deployed code is affected.
+     A symbolic equivalence checker such as [hevm](https://hevm.dev/) can compare the deployed bytecode against the build from check 2 and may be able to rule out the bug.
+     Unlike a test suite, which exercises only a limited number of paths, it can prove identical behavior for all possible inputs.
+     It may not scale to large contracts, however.
 
 ## Acknowledgements
 
