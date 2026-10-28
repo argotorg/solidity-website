@@ -18,7 +18,7 @@ The rule that computes it, called C3 linearization, can produce results that are
 
 Core Solidity takes a different approach.
 As [announced in our deep dive](https://soliditylang.org/blog/2025/11/14/core-solidity-deep-dive/), we are removing inheritance from the language entirely.
-This post shows one way to reuse code without it, using traits, generics, values, and modules that own their state.
+This post shows one way to reuse code without it, using traits, generics, values, and structs that hold each module's state.
 It is not the only possible design, and we are actively exploring alternatives.
 If you have any ideas, we would like to hear them.
 
@@ -172,7 +172,7 @@ The approach in this post uses four features that are already in the language:
 - **Traits** (type classes) declare an interface that many types can implement.
 - **Generics** let a function be written once and reused for every type that satisfies a trait.
 - **Values** carry the choices, and are composed at the use site.
-- **Modules** own their state in their own storage namespace.
+- **Modules** define a struct for their state and export it without its constructor and fields, and the contract stores it as a field.
 
 Like everything in the prototype, the syntax below is provisional and may change before release.
 The code is taken from a [runnable example in the playground](https://playground.solcore.soliditylang.org/#/examples/composition), which type-checks and compiles to executable code today.
@@ -351,115 +351,149 @@ A typical example is an ERC20 token with an owner, pausing, and a supply cap, wr
 Each base contributes storage, such as `_owner`, a paused flag, `_balances`, or a cap.
 Bases can also override `_update`, the internal function that every balance change goes through, and the overrides are chained through `super`.
 
-The linearization decides the storage layout of all four bases, as well as the order of the hooks.
+The linearization decides the storage layout of all four bases, as well as the order of the `_update` overrides.
 Each base's initializer also has to run in that order, or a later read sees zero.
-OpenZeppelin uses [ERC-7201 namespaced storage](https://eips.ethereum.org/EIPS/eip-7201) for its upgradeable contracts.
 
-With this approach, the same token is built from self-contained modules.
-Each module keeps its storage in an ERC-7201 namespaced slot.
-Modules that need to run on every transfer also provide a `TransferHook` implementation.
-Here is the complete ownership module, a single slot and the functions that use it:
+With this approach, each module defines a struct for its state and the functions that use it.
+The token contract declares a field for each struct, so it decides where each module's state is stored.
+This mirrors the vaults, which build `Direct` or `Stacked(...)` values themselves and pass them to `settle`.
+Here is the ownership module:
 
 ```js
-// ownable.sol: owns one ERC-7201 namespaced slot.
-function ownerSlot() returns (word) {
-    return Typedef.rep(erc7201("token.ownable"));
+// ownable.sol: the struct is exported without its constructor and fields.
+export { Ownable, ownedBy, ownerOf, requireOwner, transferred };
+
+struct Ownable {
+    owner: address;
 }
-function owner() returns (address) {
-    return address(sload(ownerSlot()));
+
+function ownedBy(who: address) returns (Ownable) {
+    return Ownable(who);
 }
-function initOwner(who: address) {
-    require(owner() == address(0), "already initialized");
-    sstore(ownerSlot(), Typedef.rep(who));
+
+function ownerOf(state: Ownable) returns (address) {
+    return state.owner;
 }
-function requireOwner() {
-    require(sender() == owner(), "not the owner");
+
+function requireOwner(state: Ownable) {
+    require(sender() == state.owner, "not the owner");
+}
+
+function transferred(state: Ownable, to: address) returns (Ownable) {
+    requireOwner(state);
+    return Ownable(to);
 }
 ```
 
-The `Token` contract has no storage variable for the owner.
-The slot belongs to the `ownable` module, and its address is derived from the string `"token.ownable"`.
-The `pausable`, `capped`, and `erc20core` (ledger) modules have their own namespaced slots in the same way.
-Since each namespace is different, the slots cannot collide, and changing the order of composition cannot move them.
+Other modules can use the `Ownable` type, but the compiler rejects any use of its constructor or its `owner` field.
+Only the functions in `ownable.sol` can create, read, or change an `Ownable` value.
+`transferred` does not write to storage.
+It returns a new value, and the contract stores it.
 
-Code that must run on every balance change is defined by a hook trait:
-
-```js
-// hooks.sol
-trait TransferHook<h> {
-    function on(hook: h, from: Option<address>, to: Option<address>, amount: uint256);
-}
-
-enum NoHook {
-    NoHook  // an empty hook chain
-}
-
-impl TransferHook<NoHook> {
-    function on(hook: NoHook, from: Option<address>, to: Option<address>, amount: uint256) {}
-}
-```
-
-Hooks are combined with a `Stacked` type, just like the fee policies.
-`Stacked(first, second)` runs `first` and then `second`.
-
-Each module with state provides its own hook.
-The pausing hook rejects every transfer while the contract is paused, and the cap hook rejects any mint that would push the supply over the limit:
+The pausing and cap modules follow the same pattern:
 
 ```js
 // pausable.sol
-enum Pausable {
-    Pausable
+struct Pausable {
+    paused: bool;
 }
 
-impl TransferHook<Pausable> {
-    function on(hook: Pausable, from: Option<address>, to: Option<address>, amount: uint256) {
-        requireNotPaused();
-    }
+function pauseState(flag: bool) returns (Pausable) {
+    return Pausable(flag);
+}
+
+function requireNotPaused(state: Pausable) {
+    require(!state.paused, "paused");
+}
+
+// capped.sol
+struct Capped {
+    cap: uint256;
+}
+
+function cappedAt(cap: uint256) returns (Capped) {
+    return Capped(cap);
+}
+
+function requireWithinCap(state: Capped, supply: uint256) {
+    require(supply <= state.cap, "cap exceeded");
 }
 ```
 
-The ledger module owns the balances and the total supply.
-It exposes a single `apply` function, which runs one hook chain before and one after every balance change, so no hook can be skipped:
+The ledger module applies a balance change and returns the new total supply.
+A change is a mint, a transfer, or a burn:
 
 ```js
-// erc20core.sol: the only exported way to move balances.
-function apply<b, a>(before: b, after: a, from: Option<address>, to: Option<address>, amount: uint256)
-    where b: TransferHook, a: TransferHook
-{
-    TransferHook.on(before, from, to, amount);
-    // ... mint / move / burn against the namespaced balance and supply slots ...
-    TransferHook.on(after, from, to, amount);
+// erc20core.sol
+enum Change {
+    Mint(address),
+    Transfer(address, address),
+    Burn(address)
+}
+
+function apply(
+    balances: storage<mapping(address => uint256)>,
+    supply: uint256,
+    change: Change,
+    amount: uint256
+) returns (uint256) {
+    // ... credit and debit balances, return the new total supply ...
 }
 ```
 
-The token contract only connects the modules.
-It has no storage of its own.
-Its constructor initializes each module, and the hook chain is declared once, in the one function that every balance change goes through:
+The token contract declares the state of every module and calls the module functions:
 
 ```js
 contract Token {
+    ownable: Ownable;
+    pausable: Pausable;
+    capped: Capped;
+    balances: mapping(address => uint256);
+    supply: uint256;
+
     constructor() {
-        initOwner(sender());
-        setCap(uint256(1000000));
+        ownable = ownedBy(sender());
+        capped = cappedAt(uint256(1000000));
     }
 
-    // Every balance change flows through here; the hook chain is named once.
-    function update(from: Option<address>, to: Option<address>, amount: uint256) {
-        apply(Stacked(Pausable, Capped), NoHook, from, to, amount);
+    // Applies a balance change. Reverts while paused or if the new total
+    // supply is above the cap. Change balances and supply only through this
+    // function.
+    function update(change: Change, amount: uint256) {
+        requireNotPaused(pausable);
+        supply = apply(balances, supply, change, amount);
+        requireWithinCap(capped, supply);
     }
 
     function mint(to: address, amount: uint256) public {
-        requireOwner();
-        update(Option.None, Option.Some(to), amount);
+        requireOwner(ownable);
+        update(Change.Mint(to), amount);
     }
 
     function pause() public {
-        requireOwner();
-        setPaused(true);
+        requireOwner(ownable);
+        pausable = pauseState(true);
     }
-    // ... transfer, burn, balanceOf, totalSupply, transferOwnership ...
+
+    function transferOwnership(to: address) public {
+        ownable = transferred(ownable, to);
+    }
+    // ... transfer, burn, balanceOf, totalSupply, unpause, paused, owner ...
 }
 ```
+
+All of the token's state is declared in `Token`.
+Every write to a module's state is an assignment in `Token`, such as `ownable = transferred(ownable, to)`.
+`update` calls the pause check, the ledger, and the cap check, in that order.
+
+The ledger is the exception.
+A struct cannot contain a mapping yet ([solcore-rs#121](https://github.com/argotorg/solcore-rs/issues/121)), so `balances` and `supply` are plain fields in `Token`.
+This means any function in `Token` can change them without going through `update`.
+
+The fields of `Token` are laid out in the order they are declared.
+[ERC-7201](https://eips.ethereum.org/EIPS/eip-7201) namespaces place state at a location that does not depend on this order.
+Doing the same in Core Solidity would need a language feature similar to the `layout at` specifier in Classic Solidity.
+There is an [open proposal](https://github.com/argotorg/solcore-rs/issues/122) for such a feature.
 
 ## Why the C3 Problems Cannot Occur
 
@@ -470,7 +504,7 @@ None of the three problems described earlier can be expressed in either example.
 There is no list of implementations, so there is nothing a different deployment could reorder.
 `BasisFee` computes the same fee in `VaultPremium` as it would anywhere else.
 The order of composition is written explicitly where it is used, instead of following from an `is B, C` clause in another contract.
-`Stacked(Pausable, Capped)` checks pausing and then the cap because that is the order written in `update`.
+`update` checks pausing and then the cap because that is the order of the calls in `update`.
 
 **Type checking and code generation use the same implementation.**
 Trait resolution is coherent, which means a type has exactly one implementation of a trait and every call resolves to it.
@@ -481,20 +515,22 @@ What you know about `TxnContext<Signed>`, for example that it recovers a signer 
 The shared logic lives in free functions (`settle` and the trait methods) that take their inputs as explicit arguments.
 There are no base constructors and no overrides, so no constructor can call into code whose state is not yet initialized.
 Each vault's constructor initializes only its own storage, and `VaultGasless` sets its `flatFee` before anything reads it.
-The `Token` constructor calls `initOwner` and then `setCap` in the order written, and each one only reads the slot it sets.
+`ownedBy` and `cappedAt` only build values from their arguments, and the `Token` constructor stores the results.
 
 ## Conclusion
 
 Removing inheritance has a cost.
-With inheritance, a single `is` list sets up the storage layout, the hook order, and the order of initializers for you.
+With inheritance, a single `is` list sets up the storage layout, the order of the checks, and the order of initializers for you.
 In Core Solidity you write these connections yourself.
-Each vault declares its own `balances` mapping, and the token initializes each module in its constructor and lists its hook chain in `update`.
+Each vault declares its own `balances` mapping.
+The token declares a field for each module's state, sets them in its constructor, and calls each module's check in `update`.
 There is a bit more code to write, and the compiler does not lay out storage across a hierarchy for you.
+The compiler also does not check that `update` calls every module's check.
 
 In return, each connection is written where it is used.
 Inheritance ties together code reuse, storage layout, and dispatch, and controls all three with the same `is` clause.
 The approach in this post separates them.
-Behavior is a trait implemented once per type, composition is a value applied in the order you write it, and shared state lives in modules with namespaced slots.
+Behavior is a trait implemented once per type, composition is a value applied in the order you write it, and each module's state is a struct that the contract stores as a field.
 As a result, both dispatch and storage layout can be understood from the file you are reading.
 
 Core Solidity is still a prototype.
@@ -503,7 +539,7 @@ The examples also take shortcuts that production code should not.
 The vaults credit balances without actually receiving tokens, and the signed digest does not include a nonce, the chain ID, or the vault address.
 `BasisFee` can also overflow for very large amounts, because `uint256` arithmetic in the standard library is not checked yet.
 The token does not implement approvals.
-This is one possible approach to composition in Core Solidity, not a final design.
+This is an early proposal for composition in Core Solidity, and we want feedback on it before settling on a final design.
 
 You can try the [fee-policy vaults](https://playground.solcore.soliditylang.org/#/examples/composition) and the [stateful token extensions](https://playground.solcore.soliditylang.org/#/examples/extensions) in the online playground.
 The full source is also available on GitHub: the [fee-policy vaults](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/composition) and the [stateful token extensions](https://github.com/argotorg/solcore-rs/tree/main/playground/src/examples/extensions).
