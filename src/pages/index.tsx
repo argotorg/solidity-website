@@ -115,12 +115,12 @@ export default function Home({
               <Box>
                 <Text lineHeight="180%" fontSize="md" mb={4}>
                   <Link
-                    href="/blog/2026/10/22/solidity-0.8.38-release-announcement/"
+                    href="/blog/2026/11/19/solidity-0.8.39-release-announcement/"
                     fontWeight="bold"
                   >
-                   We just released the Solidity Compiler v0.8.38.
+                   We just released the Solidity Compiler v0.8.39.
                   </Link>{' '}
-                  This release fixes a low-severity bug in the Yul optimizer, makes compilation with the Yul optimizer faster, and warns about identifiers in Yul and inline assembly that are going to be reserved starting from the Amsterdam EVM version.
+                  This release fixes a medium-severity bug that could silently corrupt storage when copying recursive structs, and warns about code size based on the new limits of the Amsterdam EVM version. It is likely the last release of the 0.8 series before 0.9.0.
                 </Text>
               </Box>
             </Flex>
