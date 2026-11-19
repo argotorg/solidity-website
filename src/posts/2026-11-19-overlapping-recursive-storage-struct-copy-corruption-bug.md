@@ -82,7 +82,7 @@ The corrupting copy is always storage-to-storage, and does not depend on the opt
 
 ### Affected versions
 
-The problem is present since version 0.4.9.
+The problem has been present since version 0.4.9.
 Both the struct and the array case have existed for as long as recursive structs compile, and 0.4.9 is the first version that accepts them.
 The IR pipeline (`--via-ir`) is affected since 0.8.13, the first release where it was no longer experimental.
 The bug was already present on the experimental pipeline before then, but we do not count it as affected.
@@ -112,7 +112,7 @@ A storage-to-storage copy walks a struct member by member, and an array element 
 In this case, one of the members of a recursive struct is a dynamic array, and copying a dynamic array resizes the target array and overwrites the area that holds its elements.
 
 When source and target overlapped, copying the `children` array corrupted the value.
-In the example below, copying `root.children[0]` first copies its empty `root.children[0].children` array over the one belonging to `root`.
+In the [example below](#example), copying `root.children[0]` first copies its empty `root.children[0].children` array over the one belonging to `root`.
 This shrinks the target array, zeroing all of its elements.
 Because the source lives there, it gets cleared while we are still not done reading it.
 The `data` field, which is copied next, comes back as `0`.
