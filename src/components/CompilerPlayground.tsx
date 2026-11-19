@@ -74,9 +74,14 @@ export const CompilerPlayground: React.FC<FlexProps> = (props) => {
     const handleMessage = (e: MessageEvent) => {
       const { version: _version }: { version: string } = e.data
       try {
-        if (e.data.output.errors)
+        // The compiler also reports warnings in `errors`. Only fail on
+        // messages with severity "error", so warnings don't hide the output.
+        const errors = (e.data.output.errors ?? []).filter(
+          ({ severity }: { severity: string }) => severity === 'error'
+        )
+        if (errors.length)
           throw new Error(
-            e.data.output.errors.map(
+            errors.map(
               ({ formattedMessage }: { formattedMessage: string }) =>
                 formattedMessage
             )
