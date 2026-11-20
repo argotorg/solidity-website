@@ -3,7 +3,6 @@ import { Hero, Link, PageMetadata, Section } from '@/components'
 import {
   CONTRIBUTE_PATH,
   DOCS_URL,
-  FORUM_URL,
   MAIN_CONTENT_ID,
 } from '@/constants'
 

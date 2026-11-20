@@ -3,7 +3,6 @@ import {
   motion,
   useTransform,
   useScroll,
-  isValidMotionProp,
 } from 'framer-motion'
 
 const labels = [
